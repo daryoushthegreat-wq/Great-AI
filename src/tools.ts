@@ -1,5 +1,58 @@
 // tools.ts
 
+import fetch from 'node-fetch';
+import { z } from 'zod';
+
+// --- TypeSafe integration (typesafe-ai/skills plugin) ---
+// UNVERIFIED: the endpoint path, auth header, and request/response shape below
+// were not confirmed against live docs (docs.typesafe.ai was unreachable from
+// this environment). Confirm against https://docs.typesafe.ai/api.md or the
+// SDK before relying on this in production; adjust TYPESAFE_API_URL and the
+// request/response shapes to match.
+const TYPESAFE_API_URL = process.env.TYPESAFE_API_URL ?? 'https://api.typesafe.ai/v1/questions';
+
+const ScoreResponseSchema = z.object({
+    level: z.string(),
+    probabilities: z.record(z.string(), z.number()),
+    confidence: z.number(),
+});
+
+type ScoreResponse = z.infer<typeof ScoreResponseSchema>;
+
+interface ScoreLevel {
+    label: string;
+    description: string;
+}
+
+async function askTypeSafeScore(params: {
+    instructions: string;
+    state: Record<string, unknown>;
+    levels: ScoreLevel[];
+}): Promise<ScoreResponse> {
+    const apiKey = process.env.TYPESAFE_API_KEY;
+    if (!apiKey) throw new Error('TYPESAFE_API_KEY is required to call TypeSafe.');
+
+    const response = await fetch(TYPESAFE_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            type: 'score',
+            instructions: params.instructions,
+            criteria: params.levels,
+            state: params.state,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`TypeSafe request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return ScoreResponseSchema.parse(await response.json());
+}
+
 // Tool for searching PubMed articles
 async function pubmed_search(query) {
     // Error handling and validation
@@ -56,11 +109,60 @@ async function clinical_calculator(formula, values) {
     }
 }
 
+interface LabResult {
+    test: string;
+    value: number;
+    unit: string;
+    referenceLow?: number;
+    referenceHigh?: number;
+}
+
+interface LabInterpretation {
+    test: string;
+    value: number;
+    unit: string;
+    severity: string;
+    confidence: number;
+    probabilities: Record<string, number>;
+}
+
+const LAB_SEVERITY_LEVELS: ScoreLevel[] = [
+    { label: 'normal', description: 'Value falls within the reference range with no clinical concern.' },
+    { label: 'mildly_abnormal', description: 'Value is outside the reference range but unlikely to require immediate action.' },
+    { label: 'moderately_abnormal', description: 'Value is meaningfully outside the reference range and warrants follow-up.' },
+    { label: 'critical', description: 'Value indicates a potentially life-threatening state requiring urgent action.' },
+];
+
 // Tool for interpreting lab results
-async function lab_interpreter(results) {
-    if (!results) throw new Error('Lab results are required for interpretation.');
+async function lab_interpreter(results: LabResult[]): Promise<LabInterpretation[]> {
+    if (!Array.isArray(results) || results.length === 0) {
+        throw new Error('Lab results are required for interpretation.');
+    }
     try {
-        // Implement interpretation logic
+        return await Promise.all(
+            results.map(async (result) => {
+                const score = await askTypeSafeScore({
+                    instructions: 'Judge the clinical severity of this lab result, given its reference range.',
+                    state: {
+                        test: result.test,
+                        value: result.value,
+                        unit: result.unit,
+                        referenceLow: result.referenceLow,
+                        referenceHigh: result.referenceHigh,
+                    },
+                    levels: LAB_SEVERITY_LEVELS,
+                });
+
+                return {
+                    test: result.test,
+                    value: result.value,
+                    unit: result.unit,
+                    severity: score.level,
+                    confidence: score.confidence,
+                    probabilities: score.probabilities,
+                };
+            })
+        );
     } catch (error) {
         console.error('Lab interpreter error:', error);
         throw error;
