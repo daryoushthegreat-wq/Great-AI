@@ -51,6 +51,34 @@ export interface Guideline {
     source: SourceAttribution;
 }
 
+/**
+ * A verbatim excerpt that answers a question, bound to the record it came from.
+ *
+ * Extractive by design: the passage is the source's own wording, not a summary written
+ * over it. A generated summary can state something no guideline says while still reading
+ * as authoritative, which is the failure mode least likely to be caught at the bedside.
+ */
+export interface GuidelineEvidence {
+    passage: string;
+    citation: Guideline;
+    /** Relevance of this passage to the question, from the ranking step. */
+    relevance: number;
+    /** Strength/grade exactly as the source states it. Never inferred. */
+    recommendationStrength?: string;
+}
+
+/**
+ * `sufficientEvidence: false` is a first-class result, not an error. Returning nothing
+ * is the correct answer when open sources do not address the question, and is safer
+ * than returning the closest loosely-related passage.
+ */
+export interface GuidelineAnswer {
+    question: string;
+    evidence: GuidelineEvidence[];
+    sufficientEvidence: boolean;
+    searchedSources: string[];
+}
+
 /** A regulator-approved product label section (openFDA / DailyMed / EMA). */
 export interface DrugLabel {
     drug: string;
@@ -113,6 +141,68 @@ async function guideline_search(topic: string): Promise<Guideline[]> {
     throw new NotImplementedError(
         'guideline_search',
         'requires PubMed E-utilities filtered to Practice Guideline publication types (ACR, EULAR and peer societies), which is blocked by the network egress policy.',
+    );
+}
+
+type LicenceClass = 'open' | 'non-commercial' | 'restricted';
+
+// Ordered most-specific first: 'ccbync' must be tested before 'ccby', or every
+// non-commercial licence would match the permissive rule.
+//
+// NoDerivatives is treated as quotable because a verbatim excerpt is not a derivative
+// work. This is a conservative engineering gate, not legal advice — the licence text
+// on the record governs, and anything unrecognised fails closed.
+const LICENCE_RULES: readonly (readonly [string, LicenceClass])[] = [
+    ['ccbyncnd', 'non-commercial'],
+    ['ccbyncsa', 'non-commercial'],
+    ['ccbync', 'non-commercial'],
+    ['ccbynd', 'open'],
+    ['ccbysa', 'open'],
+    ['ccby', 'open'],
+    ['cc0', 'open'],
+    ['publicdomain', 'open'],
+];
+
+export function classify_licence(licence: string | undefined): LicenceClass {
+    if (!licence) return 'restricted';
+    const normalised = licence.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const [pattern, verdict] of LICENCE_RULES) {
+        if (normalised.includes(pattern)) return verdict;
+    }
+    return 'restricted';
+}
+
+/**
+ * Whether a record's licence permits returning verbatim passage text.
+ *
+ * Fails closed: an unknown, missing or unrecognised licence is never quotable. A record
+ * that fails this gate is still returned as a citation and link — only its text is
+ * withheld, which is what keeps society guidelines usable without mirroring them.
+ */
+export function may_quote_passage(
+    licence: string | undefined,
+    options: { allowNonCommercial?: boolean } = {},
+): boolean {
+    const verdict = classify_licence(licence);
+    if (verdict === 'open') return true;
+    if (verdict === 'non-commercial') return options.allowNonCommercial === true;
+    return false;
+}
+
+/**
+ * Answer a clinical question from open sources at query time.
+ *
+ * Retrieves rather than stores: nothing is mirrored into this repository, so the
+ * copyright position of society guidance is unchanged by using it here. Passage text is
+ * only ever included for records that clear `may_quote_passage`.
+ */
+async function guideline_answer_search(question: string): Promise<GuidelineAnswer> {
+    if (!question || !question.trim()) {
+        throw new Error('A question is required for guideline answer search.');
+    }
+    throw new NotImplementedError(
+        'guideline_answer_search',
+        'requires Europe PMC and PubMed E-utilities, both blocked by the network egress policy.',
     );
 }
 
@@ -326,6 +416,7 @@ async function generate_pptx(content: Record<string, unknown>): Promise<Uint8Arr
 export {
     pubmed_search,
     guideline_search,
+    guideline_answer_search,
     drug_label_lookup,
     drug_interaction_check,
     clinical_calculator,

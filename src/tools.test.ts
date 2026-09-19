@@ -8,9 +8,12 @@ import {
     drug_interaction_check,
     generate_clinical_report,
     generate_pptx,
+    classify_licence,
     drug_label_lookup,
+    guideline_answer_search,
     guideline_search,
     lab_interpreter,
+    may_quote_passage,
     pubmed_search,
 } from './tools.js';
 
@@ -108,6 +111,35 @@ describe('clinical_calculator', () => {
     });
 });
 
+describe('licence gate', () => {
+    it('permits quoting openly licensed records', () => {
+        for (const licence of ['CC0 1.0', 'CC BY 4.0', 'cc-by-sa', 'Public Domain', 'CC BY-ND 4.0']) {
+            assert.equal(may_quote_passage(licence), true, licence);
+        }
+    });
+
+    it('withholds non-commercial text unless non-commercial use is permitted', () => {
+        for (const licence of ['CC BY-NC 4.0', 'CC BY-NC-SA', 'CC BY-NC-ND 4.0']) {
+            assert.equal(classify_licence(licence), 'non-commercial', licence);
+            assert.equal(may_quote_passage(licence), false, licence);
+            assert.equal(may_quote_passage(licence, { allowNonCommercial: true }), true, licence);
+        }
+    });
+
+    it('fails closed on missing, empty or unrecognised licences', () => {
+        assert.equal(may_quote_passage(undefined), false);
+        assert.equal(may_quote_passage(''), false);
+        assert.equal(may_quote_passage('All rights reserved'), false);
+        assert.equal(may_quote_passage('© American College of Rheumatology'), false);
+        assert.equal(classify_licence('subscription required'), 'restricted');
+    });
+
+    it('does not let a non-commercial licence match the permissive rule', () => {
+        // 'CC BY-NC' contains 'CC BY'; rule order is what prevents the wrong verdict.
+        assert.notEqual(classify_licence('CC BY-NC 4.0'), 'open');
+    });
+});
+
 describe('input validation', () => {
     it('requires a query for pubmed_search', async () => {
         await assert.rejects(() => pubmed_search(''), /Query is required/);
@@ -115,6 +147,11 @@ describe('input validation', () => {
 
     it('requires a topic for guideline_search', async () => {
         await assert.rejects(() => guideline_search(''), /Topic is required/);
+    });
+
+    it('requires a non-blank question for guideline_answer_search', async () => {
+        await assert.rejects(() => guideline_answer_search(''), /question is required/);
+        await assert.rejects(() => guideline_answer_search('   '), /question is required/);
     });
 
     it('requires a drug name for drug_label_lookup', async () => {
@@ -132,6 +169,10 @@ describe('unimplemented tools fail loudly', () => {
     it('rejects rather than resolving undefined', async () => {
         await assert.rejects(() => pubmed_search('sepsis'), /not implemented/);
         await assert.rejects(() => guideline_search('sepsis'), /not implemented/);
+        await assert.rejects(
+            () => guideline_answer_search('First-line DMARD in rheumatoid arthritis?'),
+            /not implemented/,
+        );
         await assert.rejects(() => drug_label_lookup('warfarin'), /not implemented/);
         await assert.rejects(() => drug_interaction_check(['warfarin', 'aspirin']), /not implemented/);
         await assert.rejects(() => lab_interpreter([{ analyte: 'Na', value: 140, unit: 'mmol/L' }]), /not implemented/);
