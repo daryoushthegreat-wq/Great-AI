@@ -8,9 +8,9 @@ import {
     drug_interaction_check,
     generate_clinical_report,
     generate_pptx,
+    drug_label_lookup,
     guideline_search,
     lab_interpreter,
-    medscape_lookup,
     pubmed_search,
 } from './tools.js';
 
@@ -117,8 +117,8 @@ describe('input validation', () => {
         await assert.rejects(() => guideline_search(''), /Topic is required/);
     });
 
-    it('requires a drug name for medscape_lookup', async () => {
-        await assert.rejects(() => medscape_lookup(''), /Drug name is required/);
+    it('requires a drug name for drug_label_lookup', async () => {
+        await assert.rejects(() => drug_label_lookup(''), /Drug name is required/);
     });
 
     it('requires at least two drugs for an interaction check', async () => {
@@ -132,7 +132,7 @@ describe('unimplemented tools fail loudly', () => {
     it('rejects rather than resolving undefined', async () => {
         await assert.rejects(() => pubmed_search('sepsis'), /not implemented/);
         await assert.rejects(() => guideline_search('sepsis'), /not implemented/);
-        await assert.rejects(() => medscape_lookup('warfarin'), /not implemented/);
+        await assert.rejects(() => drug_label_lookup('warfarin'), /not implemented/);
         await assert.rejects(() => drug_interaction_check(['warfarin', 'aspirin']), /not implemented/);
         await assert.rejects(() => lab_interpreter([{ analyte: 'Na', value: 140, unit: 'mmol/L' }]), /not implemented/);
         await assert.rejects(() => generate_clinical_report({ patient: 'x' }), /not implemented/);

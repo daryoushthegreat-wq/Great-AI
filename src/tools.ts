@@ -15,37 +15,76 @@ export class NotImplementedError extends Error {
     }
 }
 
+/**
+ * Provenance for every clinical fact returned by these tools. Carrying the licence
+ * with the data is what keeps redistribution decisions auditable: openly licensed
+ * regulator data can be stored and re-served, society guideline text generally cannot.
+ */
+export interface SourceAttribution {
+    name: string;
+    url: string;
+    licence: string;
+    retrievedAt: string;
+}
+
 export interface PubMedArticle {
     pmid: string;
     title: string;
     journal?: string;
     year?: number;
+    doi?: string;
+    source: SourceAttribution;
 }
 
+/**
+ * Citation metadata only. Society guideline full text (ACR, EULAR, and peers) is
+ * copyrighted even when it is free to read, so guidelines are surfaced as a citation
+ * plus a deep link out — deliberately no `fullText` field to mirror into this system.
+ */
 export interface Guideline {
     title: string;
     organization: string;
     year?: number;
+    pmid?: string;
+    doi?: string;
     url?: string;
+    source: SourceAttribution;
 }
 
-export interface DrugMonograph {
+/** A regulator-approved product label section (openFDA / DailyMed / EMA). */
+export interface DrugLabel {
     drug: string;
-    summary: string;
-    source: string;
+    rxcui?: string;
+    indications?: string[];
+    contraindications?: string[];
+    warnings?: string[];
+    interactions?: string[];
+    source: SourceAttribution;
 }
+
+/**
+ * Severity is copied from the source record. It is never inferred: when a label states
+ * an interaction in prose without grading it, severity stays 'unknown' rather than
+ * being upgraded to a guess.
+ */
+export type InteractionSeverity =
+    | 'contraindicated'
+    | 'major'
+    | 'moderate'
+    | 'minor'
+    | 'unknown';
 
 export interface DrugInteraction {
     drugs: [string, string];
-    severity: string;
+    severity: InteractionSeverity;
     description: string;
-    source: string;
+    source: SourceAttribution;
 }
 
 export interface InteractionReport {
     checked: string[];
+    unresolved: string[];
     interactions: DrugInteraction[];
-    source: string;
 }
 
 export interface LabResult {
@@ -73,16 +112,21 @@ async function guideline_search(topic: string): Promise<Guideline[]> {
     if (!topic) throw new Error('Topic is required for guidelines search.');
     throw new NotImplementedError(
         'guideline_search',
-        'requires an authoritative guideline source to be selected and reachable.',
+        'requires PubMed E-utilities filtered to Practice Guideline publication types (ACR, EULAR and peer societies), which is blocked by the network egress policy.',
     );
 }
 
-// Tool for looking up information on Medscape
-async function medscape_lookup(drug: string): Promise<DrugMonograph> {
-    if (!drug) throw new Error('Drug name is required for Medscape lookup.');
+// Tool for looking up a regulator-approved drug label.
+//
+// Replaces the former Medscape lookup: Medscape monographs are proprietary and cannot
+// be redistributed. Regulator labelling carries no such restriction — openFDA serves US
+// SPL data as public domain, DailyMed is the NLM equivalent, and the EMA publishes
+// European product information.
+async function drug_label_lookup(drug: string): Promise<DrugLabel> {
+    if (!drug) throw new Error('Drug name is required for drug label lookup.');
     throw new NotImplementedError(
-        'medscape_lookup',
-        'requires a licensed Medscape/drug-monograph data source; monograph text must not be synthesised.',
+        'drug_label_lookup',
+        'requires the openFDA drug label API (api.fda.gov) and RxNorm name normalisation, both blocked by the network egress policy.',
     );
 }
 
@@ -91,9 +135,16 @@ async function drug_interaction_check(drugs: string[]): Promise<InteractionRepor
     if (!Array.isArray(drugs) || drugs.length < 2) {
         throw new Error('At least two drugs are required for interaction check.');
     }
+    // Comprehensive pairwise interaction datasets (DrugBank and peers) are commercially
+    // licensed, and NLM withdrew RxNav's free interaction endpoint — verify its current
+    // status before designing around it. The openly licensed substrate that remains is
+    // the `drug_interactions` section of regulator labelling, which states interactions
+    // in prose rather than as graded pairs. Matching a second agent against that prose is
+    // a semantic step and the one place in this tool where an AI judgment is warranted;
+    // severity still comes from the label, never from the model.
     throw new NotImplementedError(
         'drug_interaction_check',
-        'interaction pairs and severities must come from an authoritative database (e.g. RxNorm/DrugBank), never from model inference.',
+        'requires RxNorm normalisation plus openFDA label interaction sections, both blocked by the network egress policy.',
     );
 }
 
@@ -275,7 +326,7 @@ async function generate_pptx(content: Record<string, unknown>): Promise<Uint8Arr
 export {
     pubmed_search,
     guideline_search,
-    medscape_lookup,
+    drug_label_lookup,
     drug_interaction_check,
     clinical_calculator,
     lab_interpreter,

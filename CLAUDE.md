@@ -52,7 +52,7 @@ async function tool_name(param) {
 |---|---|---|
 | `pubmed_search` | `query: string` | Search PubMed medical literature |
 | `guideline_search` | `topic: string` | Search clinical practice guidelines |
-| `medscape_lookup` | `drug: string` | Look up drug information on Medscape |
+| `drug_label_lookup` | `drug: string` | Look up regulator-approved drug labelling (openFDA / DailyMed) |
 | `drug_interaction_check` | `drugs: string[]` (min 2) | Check interactions between drugs |
 | `clinical_calculator` | `formula: string, values: any` | Perform clinical formula calculations |
 | `lab_interpreter` | `results: any` | Interpret laboratory test results |
@@ -117,7 +117,9 @@ When implementing a stub function:
 
 1. Keep the existing input validation and try-catch structure
 2. Add TypeScript types to parameters and return type
-3. Use `node-fetch` for external HTTP calls (PubMed API, Medscape, etc.)
+3. Use the global `fetch` (Node 18+) for external HTTP calls. Only use openly licensed
+   sources: NCBI E-utilities, openFDA, DailyMed, RxNorm. Proprietary monograph providers
+   must not be scraped or mirrored.
 4. Use `zod` to validate external API response shapes
 5. Return a well-typed result object
 6. Write tests in `tools.test.ts` that cover valid input, invalid input, and edge cases
