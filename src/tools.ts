@@ -1,5 +1,15 @@
 // tools.ts
 
+import { TypeSafeClient, score } from '@typesafe-ai/sdk';
+
+// Constructed lazily so importing this module doesn't require TYPESAFE_API_KEY
+// unless a TypeSafe-backed tool is actually called.
+let typeSafeClient: TypeSafeClient | undefined;
+function getTypeSafeClient(): TypeSafeClient {
+    typeSafeClient ??= new TypeSafeClient();
+    return typeSafeClient;
+}
+
 // Tool for searching PubMed articles
 async function pubmed_search(query) {
     // Error handling and validation
@@ -56,11 +66,75 @@ async function clinical_calculator(formula, values) {
     }
 }
 
+interface LabResult {
+    test: string;
+    value: number;
+    unit: string;
+    referenceLow?: number;
+    referenceHigh?: number;
+}
+
+type LabSeverity = 'normal' | 'mildly_abnormal' | 'moderately_abnormal' | 'critical';
+
+// Score criteria is an ordered tuple of descriptions indexed by score from
+// zero; this order must match LAB_SEVERITY_LABELS below.
+const LAB_SEVERITY_CRITERIA = [
+    'Value falls within the reference range with no clinical concern.',
+    'Value is outside the reference range but unlikely to require immediate action.',
+    'Value is meaningfully outside the reference range and warrants follow-up.',
+    'Value indicates a potentially life-threatening state requiring urgent action.',
+] as const;
+
+const LAB_SEVERITY_LABELS: readonly LabSeverity[] = ['normal', 'mildly_abnormal', 'moderately_abnormal', 'critical'];
+
+interface LabInterpretation {
+    test: string;
+    value: number;
+    unit: string;
+    severity: LabSeverity;
+    confidence: number;
+    probabilities: Record<LabSeverity, number>;
+}
+
 // Tool for interpreting lab results
-async function lab_interpreter(results) {
-    if (!results) throw new Error('Lab results are required for interpretation.');
+async function lab_interpreter(results: LabResult[]): Promise<LabInterpretation[]> {
+    if (!Array.isArray(results) || results.length === 0) {
+        throw new Error('Lab results are required for interpretation.');
+    }
     try {
-        // Implement interpretation logic
+        return await Promise.all(
+            results.map(async (result) => {
+                const { answers } = await getTypeSafeClient().systemOne({
+                    state: {
+                        test: result.test,
+                        value: result.value,
+                        unit: result.unit,
+                        referenceLow: result.referenceLow ?? null,
+                        referenceHigh: result.referenceHigh ?? null,
+                    },
+                    questions: {
+                        severity: score(
+                            'Judge the clinical severity of this lab result, given its reference range.',
+                            LAB_SEVERITY_CRITERIA
+                        ),
+                    },
+                });
+
+                const probabilityValues = Object.values(answers.severity.probabilities);
+                const probabilities = Object.fromEntries(
+                    LAB_SEVERITY_LABELS.map((label, index) => [label, probabilityValues[index]])
+                ) as Record<LabSeverity, number>;
+
+                return {
+                    test: result.test,
+                    value: result.value,
+                    unit: result.unit,
+                    severity: LAB_SEVERITY_LABELS[answers.severity.score],
+                    confidence: answers.severity.confidence,
+                    probabilities,
+                };
+            })
+        );
     } catch (error) {
         console.error('Lab interpreter error:', error);
         throw error;
