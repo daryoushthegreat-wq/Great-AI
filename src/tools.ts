@@ -1,56 +1,13 @@
 // tools.ts
 
-import fetch from 'node-fetch';
-import { z } from 'zod';
+import { TypeSafeClient, score } from '@typesafe-ai/sdk';
 
-// --- TypeSafe integration (typesafe-ai/skills plugin) ---
-// UNVERIFIED: the endpoint path, auth header, and request/response shape below
-// were not confirmed against live docs (docs.typesafe.ai was unreachable from
-// this environment). Confirm against https://docs.typesafe.ai/api.md or the
-// SDK before relying on this in production; adjust TYPESAFE_API_URL and the
-// request/response shapes to match.
-const TYPESAFE_API_URL = process.env.TYPESAFE_API_URL ?? 'https://api.typesafe.ai/v1/questions';
-
-const ScoreResponseSchema = z.object({
-    level: z.string(),
-    probabilities: z.record(z.string(), z.number()),
-    confidence: z.number(),
-});
-
-type ScoreResponse = z.infer<typeof ScoreResponseSchema>;
-
-interface ScoreLevel {
-    label: string;
-    description: string;
-}
-
-async function askTypeSafeScore(params: {
-    instructions: string;
-    state: Record<string, unknown>;
-    levels: ScoreLevel[];
-}): Promise<ScoreResponse> {
-    const apiKey = process.env.TYPESAFE_API_KEY;
-    if (!apiKey) throw new Error('TYPESAFE_API_KEY is required to call TypeSafe.');
-
-    const response = await fetch(TYPESAFE_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            type: 'score',
-            instructions: params.instructions,
-            criteria: params.levels,
-            state: params.state,
-        }),
-    });
-
-    if (!response.ok) {
-        throw new Error(`TypeSafe request failed: ${response.status} ${response.statusText}`);
-    }
-
-    return ScoreResponseSchema.parse(await response.json());
+// Constructed lazily so importing this module doesn't require TYPESAFE_API_KEY
+// unless a TypeSafe-backed tool is actually called.
+let typeSafeClient: TypeSafeClient | undefined;
+function getTypeSafeClient(): TypeSafeClient {
+    typeSafeClient ??= new TypeSafeClient();
+    return typeSafeClient;
 }
 
 // Tool for searching PubMed articles
@@ -117,21 +74,27 @@ interface LabResult {
     referenceHigh?: number;
 }
 
+type LabSeverity = 'normal' | 'mildly_abnormal' | 'moderately_abnormal' | 'critical';
+
+// Score criteria is an ordered tuple of descriptions indexed by score from
+// zero; this order must match LAB_SEVERITY_LABELS below.
+const LAB_SEVERITY_CRITERIA = [
+    'Value falls within the reference range with no clinical concern.',
+    'Value is outside the reference range but unlikely to require immediate action.',
+    'Value is meaningfully outside the reference range and warrants follow-up.',
+    'Value indicates a potentially life-threatening state requiring urgent action.',
+] as const;
+
+const LAB_SEVERITY_LABELS: readonly LabSeverity[] = ['normal', 'mildly_abnormal', 'moderately_abnormal', 'critical'];
+
 interface LabInterpretation {
     test: string;
     value: number;
     unit: string;
-    severity: string;
+    severity: LabSeverity;
     confidence: number;
-    probabilities: Record<string, number>;
+    probabilities: Record<LabSeverity, number>;
 }
-
-const LAB_SEVERITY_LEVELS: ScoreLevel[] = [
-    { label: 'normal', description: 'Value falls within the reference range with no clinical concern.' },
-    { label: 'mildly_abnormal', description: 'Value is outside the reference range but unlikely to require immediate action.' },
-    { label: 'moderately_abnormal', description: 'Value is meaningfully outside the reference range and warrants follow-up.' },
-    { label: 'critical', description: 'Value indicates a potentially life-threatening state requiring urgent action.' },
-];
 
 // Tool for interpreting lab results
 async function lab_interpreter(results: LabResult[]): Promise<LabInterpretation[]> {
@@ -141,25 +104,34 @@ async function lab_interpreter(results: LabResult[]): Promise<LabInterpretation[
     try {
         return await Promise.all(
             results.map(async (result) => {
-                const score = await askTypeSafeScore({
-                    instructions: 'Judge the clinical severity of this lab result, given its reference range.',
+                const { answers } = await getTypeSafeClient().systemOne({
                     state: {
                         test: result.test,
                         value: result.value,
                         unit: result.unit,
-                        referenceLow: result.referenceLow,
-                        referenceHigh: result.referenceHigh,
+                        referenceLow: result.referenceLow ?? null,
+                        referenceHigh: result.referenceHigh ?? null,
                     },
-                    levels: LAB_SEVERITY_LEVELS,
+                    questions: {
+                        severity: score(
+                            'Judge the clinical severity of this lab result, given its reference range.',
+                            LAB_SEVERITY_CRITERIA
+                        ),
+                    },
                 });
+
+                const probabilityValues = Object.values(answers.severity.probabilities);
+                const probabilities = Object.fromEntries(
+                    LAB_SEVERITY_LABELS.map((label, index) => [label, probabilityValues[index]])
+                ) as Record<LabSeverity, number>;
 
                 return {
                     test: result.test,
                     value: result.value,
                     unit: result.unit,
-                    severity: score.level,
-                    confidence: score.confidence,
-                    probabilities: score.probabilities,
+                    severity: LAB_SEVERITY_LABELS[answers.severity.score],
+                    confidence: answers.severity.confidence,
+                    probabilities,
                 };
             })
         );
