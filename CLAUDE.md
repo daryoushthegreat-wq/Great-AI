@@ -27,7 +27,7 @@ Great-AI/
 - **Runtime:** Node.js
 - **Dependencies:**
   - `zod` (>=3.0.0) — schema validation (intended for input validation)
-  - `node-fetch` (>=2.6.0) — HTTP client for external API calls
+  - `node-fetch` (>=2.6.0) — declared but unused; Node 18+ has a global `fetch`
   - `testing` (^0.4.0) — test framework
   - `typescript` (>=4.0.0) — compiler
 
@@ -40,13 +40,14 @@ so the code deliberately has no runtime dependencies — it uses the global `fet
 
 ## Source Code: `src/tools.ts`
 
-The single source file exports 8 named async functions. All follow the same pattern:
+The single source file exports nine named async tool functions, plus the
+`may_quote_passage` / `classify_licence` licence helpers. All tools validate input first:
 
 ```typescript
-async function tool_name(param) {
+async function tool_name(param: string): Promise<Result> {
     if (!param) throw new Error('Descriptive validation message');
     try {
-        // Implement logic here
+        // ...
     } catch (error) {
         console.error('Tool name error:', error);
         throw error;
@@ -54,12 +55,16 @@ async function tool_name(param) {
 }
 ```
 
+Tools awaiting an implementation throw `NotImplementedError` rather than returning
+`undefined` — a caller must not be able to read "not built yet" as "nothing found".
+
 ### Tool Functions
 
 | Function | Parameters | Purpose |
 |---|---|---|
 | `pubmed_search` | `query: string` | Search PubMed medical literature |
-| `guideline_search` | `topic: string` | Search clinical practice guidelines |
+| `guideline_search` | `topic: string` | Search clinical practice guidelines (citations) |
+| `guideline_answer_search` | `question: string` | Answer a question from open sources, returning cited verbatim passages |
 | `drug_label_lookup` | `drug: string` | Look up regulator-approved drug labelling (openFDA / DailyMed) |
 | `drug_interaction_check` | `drugs: string[]` (min 2) | Check interactions between drugs |
 | `clinical_calculator` | `formula: string, values: any` | Perform clinical formula calculations |
@@ -79,7 +84,15 @@ All functions are exported as named exports at the bottom of the file.
 Every function validates its input first, then wraps logic in try-catch. The catch block logs to `console.error` and re-throws. **Do not swallow errors.**
 
 ### Type Annotations
-The current code lacks TypeScript type annotations despite using TypeScript. When implementing functions, add proper types — use `zod` for runtime validation of external API responses and complex inputs.
+All tools are fully typed. Use `zod` for runtime validation of external API responses
+once it is installable — validating at the boundary means a changed upstream field fails
+loudly with a path, instead of the tool silently returning nothing.
+
+### Clinical Safety
+Calculations, reference ranges and interaction severities come from code or from the
+source record. They are never inferred by a model. AI judgment is confined to semantic
+steps — ranking retrieved passages, matching a drug against label prose — and anything
+uncertain is surfaced as such rather than resolved by guessing.
 
 ### Exports
 All functions are exported as named exports at the end of `tools.ts`. Add new functions to the export block.
@@ -97,27 +110,11 @@ Real suite, run with `npm test` (compiles, then runs Node's built-in test runner
 
 ## Development Setup
 
-There are no configured npm scripts. To run TypeScript manually:
-
 ```bash
-npx tsc           # compile
-npx ts-node src/tools.ts   # run directly
-```
-
-To run tests (once a test script is configured in package.json):
-```bash
-npm test
-```
-
-**Recommended: add these to `package.json`:**
-```json
-{
-  "scripts": {
-    "build": "tsc",
-    "test": "jest --testPathPattern='src/.*\\.test\\.ts'",
-    "dev": "ts-node src/tools.ts"
-  }
-}
+npm run build             # tsc -> dist/
+npm run typecheck         # tsc --noEmit
+npm test                  # build, then node --test on the compiled suite
+npm run capture:fixtures  # record live API responses (needs network access)
 ```
 
 ## Implementing a Tool Function
@@ -134,18 +131,27 @@ When implementing a stub function:
 6. Write tests in `tools.test.ts` that cover valid input, invalid input, and edge cases
 
 Example pattern for an HTTP-based tool:
+Keep the network call thin and the parsing pure, so the logic is testable against
+`src/__fixtures__/` without network access:
+
 ```typescript
-import fetch from 'node-fetch';
 import { z } from 'zod';
 
-const PubmedResultSchema = z.object({ ... });
+const EsearchSchema = z.object({
+    esearchresult: z.object({ idlist: z.array(z.string()) }),
+});
 
-async function pubmed_search(query: string): Promise<PubmedResult[]> {
+// Pure, and covered by tests that read the fixture.
+export function parse_pubmed_search(body: unknown): string[] {
+    return EsearchSchema.parse(body).esearchresult.idlist;
+}
+
+async function pubmed_search(query: string): Promise<string[]> {
     if (!query) throw new Error('Query is required for PubMed search.');
     try {
-        const response = await fetch(`https://...`);
-        const data = await response.json();
-        return PubmedResultSchema.array().parse(data);
+        const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/...`);
+        if (!response.ok) throw new Error(`PubMed returned HTTP ${response.status}`);
+        return parse_pubmed_search(await response.json());
     } catch (error) {
         console.error('PubMed search error:', error);
         throw error;
