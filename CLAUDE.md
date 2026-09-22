@@ -9,9 +9,15 @@ Great-AI is a clinical decision support toolkit providing async TypeScript funct
 ```
 Great-AI/
 ├── src/
-│   ├── tools.ts          # All 8 tool function implementations (primary source)
-│   └── tools.test.ts     # Test suite (placeholder — currently misaligned with tools.ts)
-├── package.json          # Dependencies only; no scripts configured
+│   ├── tools.ts          # All tool function implementations (primary source)
+│   ├── tools.test.ts     # Test suite (node:test)
+│   ├── globals.d.ts      # Temporary Node type shims — see Known Issues
+│   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
+├── scripts/
+│   └── capture-fixtures.mjs  # Run once with network access to record fixtures
+├── tsconfig.json
+├── package.json
+├── .gitignore
 └── CLAUDE.md             # This file
 ```
 
@@ -25,10 +31,12 @@ Great-AI/
   - `testing` (^0.4.0) — test framework
   - `typescript` (>=4.0.0) — compiler
 
-**Missing configuration files that need to be created before developing:**
-- `tsconfig.json` — TypeScript compiler config
-- A test script entry in `package.json`
-- `.gitignore`
+`tsconfig.json`, `.gitignore` and npm scripts are now configured.
+
+**Dependency state:** `npm install` currently fails for the whole project because
+`testing@^0.4.0` is not published on the npm registry. Nothing is installed as a result,
+so the code deliberately has no runtime dependencies — it uses the global `fetch` and
+`node:test`, both built into Node 18+/22+. Remove that dependency to unblock installs.
 
 ## Source Code: `src/tools.ts`
 
@@ -78,13 +86,14 @@ All functions are exported as named exports at the end of `tools.ts`. Add new fu
 
 ## Test File: `src/tools.test.ts`
 
-**The test file is currently a placeholder and does not match the actual implementation.** It imports a non-existent `clinicalTools` default export and tests non-existent `toolA`/`toolB` functions.
+Real suite, run with `npm test` (compiles, then runs Node's built-in test runner).
 
-When writing real tests:
-- Import functions directly: `import { pubmed_search, drug_interaction_check } from './tools';`
-- Test input validation errors (pass empty/invalid inputs, expect thrown errors)
-- Test successful outputs when logic is implemented
-- The test framework supports Jest-style `describe`/`it`/`expect` syntax
+- Import functions directly: `import { pubmed_search } from './tools.js';` — the `.js`
+  extension is required under `NodeNext` module resolution, even from a `.ts` file.
+- Uses `node:test` + `node:assert/strict`, not Jest. Nothing to install.
+- Cover input validation errors, successful outputs, and edge cases.
+- Parser tests should run against `src/__fixtures__/` rather than live network calls, so
+  the suite stays deterministic and works in CI.
 
 ## Development Setup
 
@@ -146,16 +155,25 @@ async function pubmed_search(query: string): Promise<PubmedResult[]> {
 
 ## Git Workflow
 
-- Feature branch: `claude/add-claude-documentation-aowWK`
+- Feature branch: `claude/install-typesafe-skill-q70ajh`
 - Remote: `daryoushthegreat-wq/Great-AI`
 - Commit with descriptive messages describing intent, not just what changed
 - Push with: `git push -u origin <branch-name>`
 
 ## Known Issues / TODOs
 
-1. **All tool functions are stubs** — logic marked `// Implement X logic here` needs to be written
-2. **`tools.test.ts` is misaligned** — imports and test cases don't match `tools.ts` exports; rewrite before running tests
-3. **No `tsconfig.json`** — TypeScript compilation is not configured; add before building
-4. **No type annotations** — parameters and return types are implicit `any`; add proper types when implementing
-5. **No npm scripts** — `package.json` has no `scripts` field; add `build`, `test`, `dev`
-6. **No `.gitignore`** — `node_modules/`, `dist/`, and `.env` files should be excluded
+1. **`testing@^0.4.0` is unpublished** — this breaks `npm install` for the entire project.
+   Fix this first; everything else is downstream of it.
+2. **`src/globals.d.ts` is a stopgap** — hand-written minimal shims for `console`,
+   `node:test` and `node:assert/strict`, only needed because `@types/node` cannot be
+   installed while issue 1 stands. Delete it once `npm i -D @types/node` succeeds.
+3. **Network-backed tools are unimplemented** — `pubmed_search`, `guideline_search`,
+   `guideline_answer_search`, `drug_label_lookup`, `drug_interaction_check` and
+   `lab_interpreter` throw `NotImplementedError`. They need an environment with outbound
+   access to NCBI, Europe PMC, openFDA and RxNorm; run `npm run capture:fixtures` there
+   first, then write the parsers against the recorded fixtures.
+4. **`clinical_calculator` is implemented** and covered by tests — six formulas, with an
+   unrecognised formula rejected rather than approximated.
+5. **The TypeSafe semantic layer is not wired up** — the plugin skill is installed, but
+   the SDK and docs were unreachable, so no API contract was available. It belongs only
+   at the ranking/verification steps, never in the computation path.

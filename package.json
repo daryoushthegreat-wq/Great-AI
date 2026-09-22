@@ -2,6 +2,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "capture:fixtures": "node scripts/capture-fixtures.mjs",
     "test": "tsc && node --test \"dist/**/*.test.js\""
   },
   "dependencies": {
