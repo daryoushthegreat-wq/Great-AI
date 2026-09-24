@@ -89,8 +89,42 @@ describe('clinical_calculator', () => {
     it('rejects a non-positive physiological value', async () => {
         await assert.rejects(
             () => clinical_calculator('bmi', { weight_kg: -70, height_cm: 175 }),
-            /must be greater than zero/,
+            /outside the plausible range/,
         );
+    });
+
+    it('rejects an implausible magnitude, which is usually a unit error', async () => {
+        // 82000 kg previously produced a BMI of 25880 without complaint.
+        await assert.rejects(
+            () => clinical_calculator('bmi', { weight_kg: 82000, height_cm: 175 }),
+            /outside the plausible range 0.2-650/,
+        );
+    });
+
+    it('rejects an age that would make creatinine clearance negative', async () => {
+        // age 900 previously returned -618 mL/min as a valid result.
+        await assert.rejects(
+            () =>
+                clinical_calculator('cockcroft_gault', {
+                    age_years: 900,
+                    weight_kg: 82,
+                    creatinine_mg_dL: 1.4,
+                    sex: 'male',
+                }),
+            /outside the plausible range 0-130/,
+        );
+    });
+
+    it('still accepts unusual but real patients', async () => {
+        const neonate = await clinical_calculator('bmi', { weight_kg: 3.2, height_cm: 50 });
+        assert.equal(neonate.value, 12.8);
+        const elder = await clinical_calculator('cockcroft_gault', {
+            age_years: 103,
+            weight_kg: 48,
+            creatinine_mg_dL: 1.1,
+            sex: 'female',
+        });
+        assert.ok(elder.value > 0, 'clearance should stay positive for a 103-year-old');
     });
 
     it('rejects an out-of-range choice parameter', async () => {

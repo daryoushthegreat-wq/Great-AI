@@ -267,6 +267,24 @@ interface FormulaSpec {
     compute: (num: NumericParam, choice: ChoiceParam) => number;
 }
 
+// Plausible bounds per parameter, deliberately wide: these reject unit and data-entry
+// blunders (82000 kg, age 900) without rejecting unusual but real patients. A positivity
+// check alone does not catch a magnitude error, and a magnitude error propagates silently
+// into a result that looks well-formed.
+const PARAM_RANGES: Record<string, readonly [number, number]> = {
+    weight_kg: [0.2, 650],
+    height_cm: [20, 280],
+    age_years: [0, 130],
+    creatinine_mg_dL: [0.1, 30],
+    systolic_mmHg: [30, 300],
+    diastolic_mmHg: [10, 200],
+    sodium_mmol_L: [80, 200],
+    chloride_mmol_L: [50, 160],
+    bicarbonate_mmol_L: [2, 60],
+    calcium_mg_dL: [2, 20],
+    albumin_g_dL: [0.5, 7],
+};
+
 // Every supported formula is an explicit, deterministic definition. An unrecognised
 // formula is rejected rather than approximated.
 const FORMULAS: Record<ClinicalFormula, FormulaSpec> = {
@@ -346,10 +364,15 @@ async function clinical_calculator(
             if (!Number.isFinite(parsed)) {
                 throw new Error(`Parameter '${param}' for ${key} must be a finite number.`);
             }
-            // Every parameter in this registry is a physiological quantity, so a
-            // non-positive value indicates a unit or data-entry error.
-            if (parsed <= 0) {
-                throw new Error(`Parameter '${param}' for ${key} must be greater than zero.`);
+            const range = PARAM_RANGES[param];
+            if (!range) {
+                throw new Error(`No plausible range is defined for parameter '${param}'.`);
+            }
+            const [min, max] = range;
+            if (parsed < min || parsed > max) {
+                throw new Error(
+                    `Parameter '${param}' for ${key} is ${parsed}, outside the plausible range ${min}-${max}. Check the units.`,
+                );
             }
             inputs[param] = parsed;
         }
