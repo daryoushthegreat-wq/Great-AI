@@ -9,9 +9,14 @@ Great-AI is a clinical decision support toolkit providing async TypeScript funct
 ```
 Great-AI/
 ├── src/
-│   ├── tools.ts          # All 8 tool function implementations (primary source)
-│   └── tools.test.ts     # Test suite (placeholder — currently misaligned with tools.ts)
-├── package.json          # Dependencies only; no scripts configured
+│   ├── tools.ts          # All tool function implementations (primary source)
+│   ├── tools.test.ts     # Test suite (node:test)
+│   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
+├── scripts/
+│   └── capture-fixtures.mjs  # Run once with network access to record fixtures
+├── tsconfig.json
+├── package.json
+├── .gitignore
 └── CLAUDE.md             # This file
 ```
 
@@ -20,25 +25,28 @@ Great-AI/
 - **Language:** TypeScript (>=4.0.0)
 - **Runtime:** Node.js
 - **Dependencies:**
-  - `zod` (>=3.0.0) — schema validation (intended for input validation)
-  - `node-fetch` (>=2.6.0) — HTTP client for external API calls
-  - `testing` (^0.4.0) — test framework
+  - `@typesafe-ai/sdk` (^0.6.0) — System One judgments; used by `lab_interpreter`
+  - `zod` (>=3.0.0) — schema validation (intended for API response validation)
+  - `node-fetch` (>=2.6.0) — declared but unused; Node 18+ has a global `fetch`
   - `typescript` (>=4.0.0) — compiler
+  - `@types/node` (dev) — required; `tsconfig` sets `"types": ["node"]`
 
-**Missing configuration files that need to be created before developing:**
-- `tsconfig.json` — TypeScript compiler config
-- A test script entry in `package.json`
-- `.gitignore`
+`tsconfig.json`, `.gitignore` and npm scripts are configured, and `npm install` works.
+The unpublished `testing@^0.4.0` dependency was removed — it had been failing the install
+for the whole project, which also prevented `@typesafe-ai/sdk` from ever being installed.
+
+Tests use `node:test`, built into Node; there is no separate test framework dependency.
 
 ## Source Code: `src/tools.ts`
 
-The single source file exports 8 named async functions. All follow the same pattern:
+The single source file exports nine named async tool functions, plus the
+`may_quote_passage` / `classify_licence` licence helpers. All tools validate input first:
 
 ```typescript
-async function tool_name(param) {
+async function tool_name(param: string): Promise<Result> {
     if (!param) throw new Error('Descriptive validation message');
     try {
-        // Implement logic here
+        // ...
     } catch (error) {
         console.error('Tool name error:', error);
         throw error;
@@ -46,13 +54,17 @@ async function tool_name(param) {
 }
 ```
 
+Tools awaiting an implementation throw `NotImplementedError` rather than returning
+`undefined` — a caller must not be able to read "not built yet" as "nothing found".
+
 ### Tool Functions
 
 | Function | Parameters | Purpose |
 |---|---|---|
 | `pubmed_search` | `query: string` | Search PubMed medical literature |
-| `guideline_search` | `topic: string` | Search clinical practice guidelines |
-| `medscape_lookup` | `drug: string` | Look up drug information on Medscape |
+| `guideline_search` | `topic: string` | Search clinical practice guidelines (citations) |
+| `guideline_answer_search` | `question: string` | Answer a question from open sources, returning cited verbatim passages |
+| `drug_label_lookup` | `drug: string` | Look up regulator-approved drug labelling (openFDA / DailyMed) |
 | `drug_interaction_check` | `drugs: string[]` (min 2) | Check interactions between drugs |
 | `clinical_calculator` | `formula: string, values: any` | Perform clinical formula calculations |
 | `lab_interpreter` | `results: any` | Interpret laboratory test results |
@@ -71,44 +83,37 @@ All functions are exported as named exports at the bottom of the file.
 Every function validates its input first, then wraps logic in try-catch. The catch block logs to `console.error` and re-throws. **Do not swallow errors.**
 
 ### Type Annotations
-The current code lacks TypeScript type annotations despite using TypeScript. When implementing functions, add proper types — use `zod` for runtime validation of external API responses and complex inputs.
+All tools are fully typed. Use `zod` for runtime validation of external API responses
+once it is installable — validating at the boundary means a changed upstream field fails
+loudly with a path, instead of the tool silently returning nothing.
+
+### Clinical Safety
+Calculations, reference ranges and interaction severities come from code or from the
+source record. They are never inferred by a model. AI judgment is confined to semantic
+steps — ranking retrieved passages, matching a drug against label prose — and anything
+uncertain is surfaced as such rather than resolved by guessing.
 
 ### Exports
 All functions are exported as named exports at the end of `tools.ts`. Add new functions to the export block.
 
 ## Test File: `src/tools.test.ts`
 
-**The test file is currently a placeholder and does not match the actual implementation.** It imports a non-existent `clinicalTools` default export and tests non-existent `toolA`/`toolB` functions.
+Real suite, run with `npm test` (compiles, then runs Node's built-in test runner).
 
-When writing real tests:
-- Import functions directly: `import { pubmed_search, drug_interaction_check } from './tools';`
-- Test input validation errors (pass empty/invalid inputs, expect thrown errors)
-- Test successful outputs when logic is implemented
-- The test framework supports Jest-style `describe`/`it`/`expect` syntax
+- Import functions directly: `import { pubmed_search } from './tools.js';` — the `.js`
+  extension is required under `NodeNext` module resolution, even from a `.ts` file.
+- Uses `node:test` + `node:assert/strict`, not Jest. Nothing to install.
+- Cover input validation errors, successful outputs, and edge cases.
+- Parser tests should run against `src/__fixtures__/` rather than live network calls, so
+  the suite stays deterministic and works in CI.
 
 ## Development Setup
 
-There are no configured npm scripts. To run TypeScript manually:
-
 ```bash
-npx tsc           # compile
-npx ts-node src/tools.ts   # run directly
-```
-
-To run tests (once a test script is configured in package.json):
-```bash
-npm test
-```
-
-**Recommended: add these to `package.json`:**
-```json
-{
-  "scripts": {
-    "build": "tsc",
-    "test": "jest --testPathPattern='src/.*\\.test\\.ts'",
-    "dev": "ts-node src/tools.ts"
-  }
-}
+npm run build             # tsc -> dist/
+npm run typecheck         # tsc --noEmit
+npm test                  # build, then node --test on the compiled suite
+npm run capture:fixtures  # record live API responses (needs network access)
 ```
 
 ## Implementing a Tool Function
@@ -117,24 +122,35 @@ When implementing a stub function:
 
 1. Keep the existing input validation and try-catch structure
 2. Add TypeScript types to parameters and return type
-3. Use `node-fetch` for external HTTP calls (PubMed API, Medscape, etc.)
+3. Use the global `fetch` (Node 18+) for external HTTP calls. Only use openly licensed
+   sources: NCBI E-utilities, openFDA, DailyMed, RxNorm. Proprietary monograph providers
+   must not be scraped or mirrored.
 4. Use `zod` to validate external API response shapes
 5. Return a well-typed result object
 6. Write tests in `tools.test.ts` that cover valid input, invalid input, and edge cases
 
 Example pattern for an HTTP-based tool:
+Keep the network call thin and the parsing pure, so the logic is testable against
+`src/__fixtures__/` without network access:
+
 ```typescript
-import fetch from 'node-fetch';
 import { z } from 'zod';
 
-const PubmedResultSchema = z.object({ ... });
+const EsearchSchema = z.object({
+    esearchresult: z.object({ idlist: z.array(z.string()) }),
+});
 
-async function pubmed_search(query: string): Promise<PubmedResult[]> {
+// Pure, and covered by tests that read the fixture.
+export function parse_pubmed_search(body: unknown): string[] {
+    return EsearchSchema.parse(body).esearchresult.idlist;
+}
+
+async function pubmed_search(query: string): Promise<string[]> {
     if (!query) throw new Error('Query is required for PubMed search.');
     try {
-        const response = await fetch(`https://...`);
-        const data = await response.json();
-        return PubmedResultSchema.array().parse(data);
+        const response = await fetch(`https://eutils.ncbi.nlm.nih.gov/...`);
+        if (!response.ok) throw new Error(`PubMed returned HTTP ${response.status}`);
+        return parse_pubmed_search(await response.json());
     } catch (error) {
         console.error('PubMed search error:', error);
         throw error;
@@ -144,16 +160,28 @@ async function pubmed_search(query: string): Promise<PubmedResult[]> {
 
 ## Git Workflow
 
-- Feature branch: `claude/add-claude-documentation-aowWK`
+- Feature branch: `claude/install-typesafe-skill-q70ajh`
 - Remote: `daryoushthegreat-wq/Great-AI`
 - Commit with descriptive messages describing intent, not just what changed
 - Push with: `git push -u origin <branch-name>`
 
 ## Known Issues / TODOs
 
-1. **All tool functions are stubs** — logic marked `// Implement X logic here` needs to be written
-2. **`tools.test.ts` is misaligned** — imports and test cases don't match `tools.ts` exports; rewrite before running tests
-3. **No `tsconfig.json`** — TypeScript compilation is not configured; add before building
-4. **No type annotations** — parameters and return types are implicit `any`; add proper types when implementing
-5. **No npm scripts** — `package.json` has no `scripts` field; add `build`, `test`, `dev`
-6. **No `.gitignore`** — `node_modules/`, `dist/`, and `.env` files should be excluded
+1. **`lab_interpreter` decides severity with a model, including `critical`.** It sends the
+   value and reference range to a TypeSafe Score judgment and returns whatever level comes
+   back. Two consequences worth weighing: whether a value sits outside its reference range
+   is arithmetic that cannot be wrong, but is currently delegated; and `referenceLow` /
+   `referenceHigh` are optional, so with neither supplied the model is judging against a
+   range it has inferred. There is no deterministic floor and no confidence threshold, so a
+   `critical` value scored as `mildly_abnormal` fails silently. Consider computing the
+   in/out-of-range flag in code and treating the model's severity as an advisory overlay.
+2. **Network-backed tools are unimplemented** — `pubmed_search`, `guideline_search`,
+   `guideline_answer_search`, `drug_label_lookup` and `drug_interaction_check` throw
+   `NotImplementedError`. They need an environment with outbound access to NCBI, Europe
+   PMC, openFDA and RxNorm; run `npm run capture:fixtures` there first, then write the
+   parsers against the recorded fixtures.
+3. **`clinical_calculator` is implemented** and covered by tests — six formulas, with an
+   unrecognised formula rejected rather than approximated.
+4. **`lab_interpreter` has no test coverage beyond input validation.** The TypeSafe client
+   is constructed by a module-level lazy getter, so there is no seam to stub it. Injecting
+   the client would make the mapping logic testable.
