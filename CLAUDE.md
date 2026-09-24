@@ -11,7 +11,6 @@ Great-AI/
 ├── src/
 │   ├── tools.ts          # All tool function implementations (primary source)
 │   ├── tools.test.ts     # Test suite (node:test)
-│   ├── globals.d.ts      # Temporary Node type shims — see Known Issues
 │   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
 ├── scripts/
 │   └── capture-fixtures.mjs  # Run once with network access to record fixtures
@@ -26,17 +25,17 @@ Great-AI/
 - **Language:** TypeScript (>=4.0.0)
 - **Runtime:** Node.js
 - **Dependencies:**
-  - `zod` (>=3.0.0) — schema validation (intended for input validation)
+  - `@typesafe-ai/sdk` (^0.6.0) — System One judgments; used by `lab_interpreter`
+  - `zod` (>=3.0.0) — schema validation (intended for API response validation)
   - `node-fetch` (>=2.6.0) — declared but unused; Node 18+ has a global `fetch`
-  - `testing` (^0.4.0) — test framework
   - `typescript` (>=4.0.0) — compiler
+  - `@types/node` (dev) — required; `tsconfig` sets `"types": ["node"]`
 
-`tsconfig.json`, `.gitignore` and npm scripts are now configured.
+`tsconfig.json`, `.gitignore` and npm scripts are configured, and `npm install` works.
+The unpublished `testing@^0.4.0` dependency was removed — it had been failing the install
+for the whole project, which also prevented `@typesafe-ai/sdk` from ever being installed.
 
-**Dependency state:** `npm install` currently fails for the whole project because
-`testing@^0.4.0` is not published on the npm registry. Nothing is installed as a result,
-so the code deliberately has no runtime dependencies — it uses the global `fetch` and
-`node:test`, both built into Node 18+/22+. Remove that dependency to unblock installs.
+Tests use `node:test`, built into Node; there is no separate test framework dependency.
 
 ## Source Code: `src/tools.ts`
 
@@ -168,18 +167,21 @@ async function pubmed_search(query: string): Promise<string[]> {
 
 ## Known Issues / TODOs
 
-1. **`testing@^0.4.0` is unpublished** — this breaks `npm install` for the entire project.
-   Fix this first; everything else is downstream of it.
-2. **`src/globals.d.ts` is a stopgap** — hand-written minimal shims for `console`,
-   `node:test` and `node:assert/strict`, only needed because `@types/node` cannot be
-   installed while issue 1 stands. Delete it once `npm i -D @types/node` succeeds.
-3. **Network-backed tools are unimplemented** — `pubmed_search`, `guideline_search`,
-   `guideline_answer_search`, `drug_label_lookup`, `drug_interaction_check` and
-   `lab_interpreter` throw `NotImplementedError`. They need an environment with outbound
-   access to NCBI, Europe PMC, openFDA and RxNorm; run `npm run capture:fixtures` there
-   first, then write the parsers against the recorded fixtures.
-4. **`clinical_calculator` is implemented** and covered by tests — six formulas, with an
+1. **`lab_interpreter` decides severity with a model, including `critical`.** It sends the
+   value and reference range to a TypeSafe Score judgment and returns whatever level comes
+   back. Two consequences worth weighing: whether a value sits outside its reference range
+   is arithmetic that cannot be wrong, but is currently delegated; and `referenceLow` /
+   `referenceHigh` are optional, so with neither supplied the model is judging against a
+   range it has inferred. There is no deterministic floor and no confidence threshold, so a
+   `critical` value scored as `mildly_abnormal` fails silently. Consider computing the
+   in/out-of-range flag in code and treating the model's severity as an advisory overlay.
+2. **Network-backed tools are unimplemented** — `pubmed_search`, `guideline_search`,
+   `guideline_answer_search`, `drug_label_lookup` and `drug_interaction_check` throw
+   `NotImplementedError`. They need an environment with outbound access to NCBI, Europe
+   PMC, openFDA and RxNorm; run `npm run capture:fixtures` there first, then write the
+   parsers against the recorded fixtures.
+3. **`clinical_calculator` is implemented** and covered by tests — six formulas, with an
    unrecognised formula rejected rather than approximated.
-5. **The TypeSafe semantic layer is not wired up** — the plugin skill is installed, but
-   the SDK and docs were unreachable, so no API contract was available. It belongs only
-   at the ranking/verification steps, never in the computation path.
+4. **`lab_interpreter` has no test coverage beyond input validation.** The TypeSafe client
+   is constructed by a module-level lazy getter, so there is no seam to stub it. Injecting
+   the client would make the mapping logic testable.

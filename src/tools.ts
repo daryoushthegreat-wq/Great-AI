@@ -1,4 +1,7 @@
 // tools.ts
+
+import { TypeSafeClient, score } from '@typesafe-ai/sdk';
+
 //
 // Architecture follows the TypeSafe "System One" split: known rules, calculations
 // and exact lookups stay in code; AI judgment is reserved for semantic steps
@@ -115,15 +118,12 @@ export interface InteractionReport {
     interactions: DrugInteraction[];
 }
 
-export interface LabResult {
-    analyte: string;
-    value: number;
-    unit: string;
-}
-
-export interface LabInterpretation extends LabResult {
-    flag: 'low' | 'normal' | 'high';
-    referenceRange: string;
+// Constructed lazily so importing this module doesn't require TYPESAFE_API_KEY
+// unless a TypeSafe-backed tool is actually called.
+let typeSafeClient: TypeSafeClient | undefined;
+function getTypeSafeClient(): TypeSafeClient {
+    typeSafeClient ??= new TypeSafeClient();
+    return typeSafeClient;
 }
 
 // Tool for searching PubMed articles
@@ -386,13 +386,93 @@ async function clinical_calculator(
     }
 }
 
+interface LabResult {
+    test: string;
+    value: number;
+    unit: string;
+    referenceLow?: number;
+    referenceHigh?: number;
+}
+
+type LabSeverity = 'normal' | 'mildly_abnormal' | 'moderately_abnormal' | 'critical';
+
+// Score criteria is an ordered tuple of descriptions indexed by score from
+// zero; this order must match LAB_SEVERITY_LABELS below.
+const LAB_SEVERITY_CRITERIA = [
+    'Value falls within the reference range with no clinical concern.',
+    'Value is outside the reference range but unlikely to require immediate action.',
+    'Value is meaningfully outside the reference range and warrants follow-up.',
+    'Value indicates a potentially life-threatening state requiring urgent action.',
+] as const;
+
+const LAB_SEVERITY_LABELS: readonly LabSeverity[] = ['normal', 'mildly_abnormal', 'moderately_abnormal', 'critical'];
+
+interface LabInterpretation {
+    test: string;
+    value: number;
+    unit: string;
+    severity: LabSeverity;
+    confidence: number;
+    probabilities: Record<LabSeverity, number>;
+}
+
 // Tool for interpreting lab results
 async function lab_interpreter(results: LabResult[]): Promise<LabInterpretation[]> {
-    if (!results) throw new Error('Lab results are required for interpretation.');
-    throw new NotImplementedError(
-        'lab_interpreter',
-        'reference ranges are assay- and population-specific and must be sourced from the reporting laboratory.',
-    );
+    if (!Array.isArray(results) || results.length === 0) {
+        throw new Error('Lab results are required for interpretation.');
+    }
+    try {
+        return await Promise.all(
+            results.map(async (result) => {
+                const { answers } = await getTypeSafeClient().systemOne({
+                    state: {
+                        test: result.test,
+                        value: result.value,
+                        unit: result.unit,
+                        referenceLow: result.referenceLow ?? null,
+                        referenceHigh: result.referenceHigh ?? null,
+                    },
+                    questions: {
+                        severity: score(
+                            'Judge the clinical severity of this lab result, given its reference range.',
+                            LAB_SEVERITY_CRITERIA
+                        ),
+                    },
+                });
+
+                // Probabilities are keyed by score, so read them by key rather than by
+                // position — Object.values order is not part of the SDK contract.
+                const byScore = answers.severity.probabilities as Record<number, number>;
+                const probabilities = Object.fromEntries(
+                    LAB_SEVERITY_LABELS.map((label, index) => [label, byScore[index] ?? 0])
+                ) as Record<LabSeverity, number>;
+
+                // `score` is an expected value and may land between rubric levels (1.7),
+                // so it has to be rounded to a level before it can index the labels.
+                // Indexing directly yields undefined for every non-integer score.
+                const level = Math.min(
+                    LAB_SEVERITY_LABELS.length - 1,
+                    Math.max(0, Math.round(answers.severity.score)),
+                );
+                const severity = LAB_SEVERITY_LABELS[level];
+                if (!severity) {
+                    throw new Error(`Could not map severity score ${answers.severity.score} to a level.`);
+                }
+
+                return {
+                    test: result.test,
+                    value: result.value,
+                    unit: result.unit,
+                    severity,
+                    confidence: answers.severity.confidence,
+                    probabilities,
+                };
+            })
+        );
+    } catch (error) {
+        console.error('Lab interpreter error:', error);
+        throw error;
+    }
 }
 
 // Tool for generating clinical reports

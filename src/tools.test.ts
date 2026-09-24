@@ -161,6 +161,10 @@ describe('input validation', () => {
     it('requires at least two drugs for an interaction check', async () => {
         await assert.rejects(() => drug_interaction_check(['warfarin']), /At least two drugs/);
     });
+
+    it('requires a non-empty result set for lab_interpreter', async () => {
+        await assert.rejects(() => lab_interpreter([]), /Lab results are required/);
+    });
 });
 
 // A stub must fail loudly. Previously each of these resolved to `undefined`, which a
@@ -175,7 +179,6 @@ describe('unimplemented tools fail loudly', () => {
         );
         await assert.rejects(() => drug_label_lookup('warfarin'), /not implemented/);
         await assert.rejects(() => drug_interaction_check(['warfarin', 'aspirin']), /not implemented/);
-        await assert.rejects(() => lab_interpreter([{ analyte: 'Na', value: 140, unit: 'mmol/L' }]), /not implemented/);
         await assert.rejects(() => generate_clinical_report({ patient: 'x' }), /not implemented/);
         await assert.rejects(() => generate_pptx({ slides: [] }), /not implemented/);
     });
