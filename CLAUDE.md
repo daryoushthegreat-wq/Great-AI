@@ -4,6 +4,30 @@
 
 Great-AI is a clinical decision support toolkit providing async TypeScript functions for medical research, drug interaction checking, lab result interpretation, and clinical report generation. The codebase is in early development — all tool functions have defined interfaces and input validation but contain stub implementations pending core logic.
 
+## Environment
+
+Read this before running commands or reaching for the network. Each item below cost a
+wasted tool call in an earlier session.
+
+**Every API this toolkit targets is unreachable from the sandbox.** These hosts return
+`EGRESS_BLOCKED`, so do not try them to "check the shape" of a response:
+`eutils.ncbi.nlm.nih.gov`, `www.ebi.ac.uk` (Europe PMC), `api.fda.gov`, `rxnav.nlm.nih.gov`,
+plus `docs.typesafe.ai` and `unpkg.com`. Write parsers against `src/__fixtures__/` instead;
+`npm run capture:fixtures` records those fixtures in an environment that does have access.
+
+**`@typesafe-ai/sdk` ships no `.d.ts`.** Its contract lives in
+`node_modules/@typesafe-ai/sdk/dist/index.d.cts` (and `.d.mts`) — globbing for `*.d.ts`
+finds nothing. The one non-obvious term: `ScoreResponse.score` is documented as the
+"expected score, which may fall between integer rubric levels", so it can be `1.7`.
+Round and clamp before using it to index `LAB_SEVERITY_LABELS`; indexing directly
+yields `undefined` typed as `LabSeverity`.
+
+**Two command shapes that lie about success:**
+- `npx tsc --noEmit | head -30; echo "exit: $?"` reports `exit: 0` on a real type error,
+  because `$?` is `head`'s status. Read the output, not the code, or drop the pipe.
+- `node --test dist/` fails with `MODULE_NOT_FOUND` — it treats the directory as an entry
+  point. The `test` script uses `node --test "dist/**/*.test.js"`; keep the glob.
+
 ## Repository Structure
 
 ```
@@ -14,6 +38,10 @@ Great-AI/
 │   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
 ├── scripts/
 │   └── capture-fixtures.mjs  # Run once with network access to record fixtures
+├── .claude/
+│   ├── settings.json         # Registers the SessionStart hook
+│   └── hooks/session-start.sh  # Installs the typesafe-ai plugin when CLAUDE_CODE_REMOTE=true
+├── dist/                 # tsc output, gitignored; tests run from here
 ├── tsconfig.json
 ├── package.json
 ├── .gitignore
@@ -59,17 +87,44 @@ Tools awaiting an implementation throw `NotImplementedError` rather than returni
 
 ### Tool Functions
 
-| Function | Parameters | Purpose |
-|---|---|---|
-| `pubmed_search` | `query: string` | Search PubMed medical literature |
-| `guideline_search` | `topic: string` | Search clinical practice guidelines (citations) |
-| `guideline_answer_search` | `question: string` | Answer a question from open sources, returning cited verbatim passages |
-| `drug_label_lookup` | `drug: string` | Look up regulator-approved drug labelling (openFDA / DailyMed) |
-| `drug_interaction_check` | `drugs: string[]` (min 2) | Check interactions between drugs |
-| `clinical_calculator` | `formula: string, values: any` | Perform clinical formula calculations |
-| `lab_interpreter` | `results: any` | Interpret laboratory test results |
-| `generate_clinical_report` | `data: any` | Generate structured clinical reports |
-| `generate_pptx` | `content: any` | Generate PowerPoint presentations |
+This table is checked against the export block in `src/tools.ts` by a test in
+`src/tools.test.ts`; if you add, remove or rename a tool, the suite fails until the table
+matches. Keep the function name in the first column as `` `name` ``.
+
+| Function | Parameters | Returns | Purpose |
+|---|---|---|---|
+| `pubmed_search` | `query: string` | `PubMedArticle[]` | Search PubMed medical literature |
+| `guideline_search` | `topic: string` | `Guideline[]` | Search clinical practice guidelines (citations only, no full text) |
+| `guideline_answer_search` | `question: string` | `GuidelineAnswer` | Answer a question from open sources, returning cited verbatim passages |
+| `drug_label_lookup` | `drug: string` | `DrugLabel` | Look up regulator-approved drug labelling (openFDA / DailyMed) |
+| `drug_interaction_check` | `drugs: string[]` (min 2) | `InteractionReport` | Check interactions between drugs |
+| `clinical_calculator` | `formula: string, values: CalculatorValues` | `CalculatorResult` | Perform clinical formula calculations |
+| `lab_interpreter` | `results: LabResult[]` | `LabInterpretation[]` | Interpret laboratory test results |
+| `generate_clinical_report` | `data: Record<string, unknown>` | `string` | Generate structured clinical reports |
+| `generate_pptx` | `content: Record<string, unknown>` | `Uint8Array` | Generate PowerPoint presentations |
+
+Every function is `async`, so each `Returns` entry above is wrapped in a `Promise`.
+
+The parameter and return types are exported alongside the functions, so a caller can name
+what it passes:
+
+```typescript
+export type ClinicalFormula = 'bmi' | 'bsa_mosteller' | 'map' | 'cockcroft_gault'
+                            | 'anion_gap' | 'corrected_calcium';
+export type CalculatorValues = Record<string, number | string | undefined>;
+export interface CalculatorResult { formula: ClinicalFormula; label: string; value: number;
+                                    unit: string; inputs: Record<string, number | string>; }
+
+export interface LabResult { test: string; value: number; unit: string;
+                             referenceLow?: number; referenceHigh?: number; }
+export type LabSeverity = 'normal' | 'mildly_abnormal' | 'moderately_abnormal' | 'critical';
+export interface LabInterpretation { test: string; value: number; unit: string;
+                                     severity: LabSeverity; confidence: number;
+                                     probabilities: Record<LabSeverity, number>; }
+```
+
+`referenceLow` and `referenceHigh` are optional, which is what Known Issue 1 below is about:
+with neither supplied, `lab_interpreter` asks the model to judge against a range it inferred.
 
 All functions are exported as named exports at the bottom of the file.
 
@@ -106,6 +161,9 @@ Real suite, run with `npm test` (compiles, then runs Node's built-in test runner
 - Cover input validation errors, successful outputs, and edge cases.
 - Parser tests should run against `src/__fixtures__/` rather than live network calls, so
   the suite stays deterministic and works in CI.
+- The `CLAUDE.md stays in sync with the code` suite reads this file and `src/tools.ts` and
+  fails if the Tool Functions table drifts from the export block. It resolves the repo root
+  as `path.resolve(__dirname, '..')` from `dist/`, so it does not depend on the shell's cwd.
 
 ## Development Setup
 

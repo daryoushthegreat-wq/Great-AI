@@ -409,7 +409,7 @@ async function clinical_calculator(
     }
 }
 
-interface LabResult {
+export interface LabResult {
     test: string;
     value: number;
     unit: string;
@@ -417,7 +417,7 @@ interface LabResult {
     referenceHigh?: number;
 }
 
-type LabSeverity = 'normal' | 'mildly_abnormal' | 'moderately_abnormal' | 'critical';
+export type LabSeverity = 'normal' | 'mildly_abnormal' | 'moderately_abnormal' | 'critical';
 
 // Score criteria is an ordered tuple of descriptions indexed by score from
 // zero; this order must match LAB_SEVERITY_LABELS below.
@@ -430,7 +430,7 @@ const LAB_SEVERITY_CRITERIA = [
 
 const LAB_SEVERITY_LABELS: readonly LabSeverity[] = ['normal', 'mildly_abnormal', 'moderately_abnormal', 'critical'];
 
-interface LabInterpretation {
+export interface LabInterpretation {
     test: string;
     value: number;
     unit: string;

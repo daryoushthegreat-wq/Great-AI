@@ -2,6 +2,8 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 import {
     clinical_calculator,
@@ -198,6 +200,58 @@ describe('input validation', () => {
 
     it('requires a non-empty result set for lab_interpreter', async () => {
         await assert.rejects(() => lab_interpreter([]), /Lab results are required/);
+    });
+});
+
+// Stale guidance should fail the build, not mislead silently — the same argument that
+// makes the stubs below throw instead of resolving `undefined`. CLAUDE.md's tool table
+// previously still described `medscape_lookup` after the code had renamed it, which costs
+// a reader a wasted file read and some misplaced confidence.
+describe('CLAUDE.md stays in sync with the code', () => {
+    // Tests run from dist/, so the repo root is one level up from the compiled file.
+    const repoRoot = path.resolve(__dirname, '..');
+    const read = (relative: string) => readFileSync(path.join(repoRoot, relative), 'utf8');
+
+    /** Names in the `export { ... };` block at the bottom of src/tools.ts. */
+    function exportedToolNames(source: string): string[] {
+        const blocks = [...source.matchAll(/export\s*\{([^}]*)\};/g)];
+        assert.equal(blocks.length, 1, 'expected exactly one `export { ... };` block');
+        return (blocks[0]?.[1] ?? '')
+            .split(',')
+            .map((name) => name.trim())
+            .filter((name) => name.length > 0)
+            .sort();
+    }
+
+    /** Backticked names in the first column of the Tool Functions table. */
+    function documentedToolNames(doc: string): string[] {
+        const section = doc.split('### Tool Functions')[1]?.split('\n## ')[0] ?? '';
+        return [...section.matchAll(/^\|\s*`([a-z_]+)`\s*\|/gm)]
+            .map((match) => match[1] as string)
+            .sort();
+    }
+
+    it('documents every exported tool, and no tool that does not exist', () => {
+        const exported = exportedToolNames(read('src/tools.ts'));
+        const documented = documentedToolNames(read('CLAUDE.md'));
+
+        assert.ok(exported.length > 0, 'parsed no exports — the regex is probably stale');
+        assert.ok(documented.length > 0, 'parsed no table rows — the table format changed');
+        assert.deepEqual(
+            documented,
+            exported,
+            'CLAUDE.md tool table and the tools.ts export block disagree',
+        );
+    });
+
+    it('does not describe the toolkit with `any`', () => {
+        // `values: any` in the table is worse than no table: it costs a read and tells the
+        // reader nothing. The real types are exported, so name them.
+        const section = read('CLAUDE.md').split('### Tool Functions')[1]?.split('\n## ')[0] ?? '';
+        const rows = section.split('\n').filter((line) => /^\|\s*`[a-z_]+`\s*\|/.test(line));
+        for (const row of rows) {
+            assert.ok(!/\bany\b/.test(row), `tool table row still uses \`any\`: ${row.trim()}`);
+        }
     });
 });
 
