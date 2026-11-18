@@ -40,10 +40,14 @@ Great-AI/
 │   ├── guideline_ranking.test.ts  # Truth-table coverage, no network or API key
 │   ├── guideline_corpus.ts        # zod-validated loader for openly licensed corpora
 │   ├── guideline_corpus.test.ts
+│   ├── guideline_routing.ts       # Deterministic situation -> recommendation routing
+│   ├── guideline_routing.test.ts
 │   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
 │       └── guidelines/   # Guideline corpora; citation metadata, never passage text
 ├── scripts/
-│   └── capture-fixtures.mjs  # Run once with network access to record fixtures
+│   ├── capture-fixtures.mjs  # Run once with network access to record fixtures
+│   ├── build-site.mjs        # npm run build:site -> site/index.html (gitignored)
+│   └── site-template.html    # Page shell; data is injected from the validated corpora
 ├── .claude/
 │   ├── settings.json         # Registers the SessionStart hook
 │   └── hooks/session-start.sh  # Installs the typesafe-ai plugin when CLAUDE_CODE_REMOTE=true
@@ -215,6 +219,7 @@ npm run build             # tsc -> dist/
 npm run typecheck         # tsc --noEmit
 npm test                  # build, then node --test on the compiled suite
 npm run capture:fixtures  # record live API responses (needs network access)
+npm run build:site        # build the static guideline browser into site/
 ```
 
 ## Implementing a Tool Function
