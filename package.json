@@ -3,7 +3,8 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "capture:fixtures": "node scripts/capture-fixtures.mjs",
-    "test": "tsc && node --test \"dist/**/*.test.js\""
+    "test": "tsc && node --test \"dist/**/*.test.js\"",
+    "build:site": "tsc && node scripts/build-site.mjs"
   },
   "dependencies": {
     "@typesafe-ai/sdk": "^0.6.0",
