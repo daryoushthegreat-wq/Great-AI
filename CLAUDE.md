@@ -38,6 +38,8 @@ Great-AI/
 │   ├── guideline_questions.ts     # Jev question wording, criteria and thresholds
 │   ├── guideline_ranking.ts       # Pure decision layer over Jev's judgments
 │   ├── guideline_ranking.test.ts  # Truth-table coverage, no network or API key
+│   ├── guideline_corpus.ts        # zod-validated loader for openly licensed corpora
+│   ├── guideline_corpus.test.ts
 │   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
 │       └── guidelines/   # Guideline corpora; citation metadata, never passage text
 ├── scripts/
@@ -158,10 +160,16 @@ Conventions for this pair:
 - A `Choice` or `Score` always returns something, so the set-level companion Noul
   (`ANY_CANDIDATE_QUESTION_ID`) is what lets code answer "nothing fits". A no there overrides
   the individual passage decisions.
-- Fixtures under `src/__fixtures__/guidelines/` carry recommendation ids, evidence grades as
-  stated, page ranges and our own `topic` labels for routing. They carry no guideline prose,
-  and a test fails if any is pasted in. Do not render a `topic` string as the guideline's
-  wording.
+- Restricted fixtures under `src/__fixtures__/guidelines/` (`ada-2026-t2d.json`) carry
+  recommendation ids, evidence grades as stated, page ranges and our own `topic` labels for
+  routing. They carry no guideline prose, and a test fails if any is pasted in. Do not render
+  a `topic` string as the guideline's wording.
+- Open fixtures (`vadod-2023-t2d.json`) carry the issuer's recommendation text verbatim and
+  load through `parse_open_guideline_corpus`, which refuses a restricted licence and any
+  strength not on the issuer's own `strengthScale`. Copy text by script from the source,
+  never by hand, and record in `licenceBasis` whatever about the licence is inferred rather
+  than stated. VA/DoD is treated as a US federal work because the document carries no
+  copyright notice; that is an inference, and the fixture says so.
 
 ## Conventions
 
