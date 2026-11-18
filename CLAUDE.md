@@ -35,7 +35,11 @@ Great-AI/
 ├── src/
 │   ├── tools.ts          # All tool function implementations (primary source)
 │   ├── tools.test.ts     # Test suite (node:test)
+│   ├── guideline_questions.ts     # Jev question wording, criteria and thresholds
+│   ├── guideline_ranking.ts       # Pure decision layer over Jev's judgments
+│   ├── guideline_ranking.test.ts  # Truth-table coverage, no network or API key
 │   └── __fixtures__/     # Captured API responses (created by capture:fixtures)
+│       └── guidelines/   # Guideline corpora; citation metadata, never passage text
 ├── scripts/
 │   └── capture-fixtures.mjs  # Run once with network access to record fixtures
 ├── .claude/
@@ -127,6 +131,37 @@ export interface LabInterpretation { test: string; value: number; unit: string;
 with neither supplied, `lab_interpreter` asks the model to judge against a range it inferred.
 
 All functions are exported as named exports at the bottom of the file.
+
+## Guideline Answering: `guideline_questions.ts` + `guideline_ranking.ts`
+
+`guideline_answer_search` is extractive, not generative. Nothing writes clinical prose: the
+answer is the source's own passage, or, where the licence forbids reproducing it, the citation
+and the source's own recommendation id and evidence grade.
+
+Two paths, split by licence rather than by quality:
+
+- **Open or non-commercial sources** (`classify_licence` returns `'open'` / `'non-commercial'`)
+  may be sent for machine processing, so `build_ranking_questions` asks Jev one judgment per
+  passage — does it state a drug choice, does its population match, how directly does it answer
+  — and `rank_guideline_passages` maps those answers to a decision in code.
+- **Restricted sources** (ADA Standards of Care, most society guidance) may not be reproduced
+  *or* text-mined, so no passage reaches a model. `select_restricted_citations` matches on the
+  corpus's own comorbidity tags, deterministically, and returns citations only.
+
+Conventions for this pair:
+
+- All question wording, criteria and thresholds live in `guideline_questions.ts`. Edits to how
+  a judgment is phrased belong there, not at a call site.
+- `guideline_ranking.ts` holds the truth table. Jev makes judgments; code makes decisions.
+  Every combination of answers lands on an outcome, including the 0.3-0.7 band, which is
+  `unsettled` rather than rounded to a yes or a no.
+- A `Choice` or `Score` always returns something, so the set-level companion Noul
+  (`ANY_CANDIDATE_QUESTION_ID`) is what lets code answer "nothing fits". A no there overrides
+  the individual passage decisions.
+- Fixtures under `src/__fixtures__/guidelines/` carry recommendation ids, evidence grades as
+  stated, page ranges and our own `topic` labels for routing. They carry no guideline prose,
+  and a test fails if any is pasted in. Do not render a `topic` string as the guideline's
+  wording.
 
 ## Conventions
 
