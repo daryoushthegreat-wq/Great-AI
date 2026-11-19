@@ -1,0 +1,36 @@
+{
+  "_comment": [
+    "Citation metadata only. The ADA Standards of Care reuse terms require ADA permission to",
+    "post the work on a third-party platform and forbid use for text or data mining or machine",
+    "learning without prior written permission, so no ADA prose is mirrored here and no ADA",
+    "passage text is ever sent to a model. Recommendation numbers, evidence grades and page",
+    "ranges are identifiers copied from the record; the `topic` strings are our own wording,",
+    "written to drive deterministic metadata matching in code, not to restate the guideline.",
+    "Retrieved 2026-11-18 from the publisher's HTML."
+  ],
+  "citation": {
+    "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026",
+    "organization": "American Diabetes Association",
+    "year": 2026,
+    "doi": "10.2337/dc26-S009",
+    "url": "https://diabetesjournals.org/care/article/49/Supplement_1/S183/163934/9-Pharmacologic-Approaches-to-Glycemic-Treatment",
+    "journal": "Diabetes Care",
+    "volume": "49",
+    "pages": "S183-S215",
+    "publishedOn": "2025-12-08",
+    "licence": "All rights reserved - ADA permission required for third-party posting, text and data mining, and machine learning"
+  },
+  "condition": "type_2_diabetes",
+  "recommendations": [
+    { "id": "9.5",   "evidenceGradeAsStated": "E",   "comorbidities": [],                      "topic": "How to choose a glucose-lowering medication: person-centred shared decision-making across cardiovascular, kidney, weight and other comorbidity effects, hypoglycaemia risk, cost and access" },
+    { "id": "9.7",   "evidenceGradeAsStated": "A",   "comorbidities": ["ascvd"],               "topic": "Drug class choice when atherosclerotic cardiovascular disease is established or high-risk" },
+    { "id": "9.8",   "evidenceGradeAsStated": "A",   "comorbidities": ["heart_failure"],       "topic": "Drug class choice in heart failure, reduced or preserved ejection fraction" },
+    { "id": "9.9a",  "evidenceGradeAsStated": "A",   "comorbidities": ["heart_failure", "obesity"], "topic": "Drug class choice in obesity with symptomatic heart failure with preserved ejection fraction" },
+    { "id": "9.10",  "evidenceGradeAsStated": "A",   "comorbidities": ["ckd"],                 "topic": "Drug class choice in chronic kidney disease at eGFR 20-60 mL/min/1.73 m2 or albuminuria" },
+    { "id": "9.11",  "evidenceGradeAsStated": "B/C", "comorbidities": ["ckd_advanced"],        "topic": "Drug class choice in advanced chronic kidney disease below eGFR 30 mL/min/1.73 m2, including dialysis" },
+    { "id": "9.12",  "evidenceGradeAsStated": "A/B", "comorbidities": ["masld", "obesity"],    "topic": "Drug class choice in metabolic dysfunction-associated steatotic liver disease with overweight or obesity" },
+    { "id": "9.13a", "evidenceGradeAsStated": "A/B", "comorbidities": ["mash"],                "topic": "Drug class choice in biopsy-proven steatohepatitis or high risk of liver fibrosis" },
+    { "id": "9.18",  "evidenceGradeAsStated": "B",   "comorbidities": [],                      "topic": "Combination that is not recommended: DPP-4 inhibitor alongside a GLP-1-based therapy" },
+    { "id": "9.21",  "evidenceGradeAsStated": "A",   "comorbidities": [],                      "topic": "Whether to prefer GLP-1-based therapy over insulin for initial or add-on therapy without severe hyperglycaemia" }
+  ]
+}
