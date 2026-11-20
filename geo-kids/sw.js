@@ -1,5 +1,5 @@
 // Offline support: cache the whole app on first visit, then always serve from the cache.
-const VERSION = 'earth-explorers-v1';
+const VERSION = 'earth-explorers-v2';
 const FILES = [
   './',
   './index.html',
@@ -11,6 +11,9 @@ const FILES = [
   './js/letters.js',
   './js/sound.js',
   './js/store.js',
+  './js/data-pro.js',
+  './js/diagrams.js',
+  './js/pro.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',

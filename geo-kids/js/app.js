@@ -2,15 +2,17 @@ import { UNITS, LESSONS, LESSON_ORDER, GAMES, WORDS, FACTS } from './data.js';
 import { iconFor, petSvg } from './icons.js';
 import { LETTERS } from './letters.js';
 import { say, stopTalking, voiceInfo, initAudio, setMusicLevel, fx, resumeAudio } from './sound.js';
-import * as store from './store.js';
+import { createStore } from './store.js';
 
-const $ = (sel, root = document) => root.querySelector(sel);
-const app = $('#app');
-const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const store = createStore('earthExplorers.v1', { LESSONS, LESSON_ORDER, GAMES });
 
-const ICON = {
+export const $ = (sel, root = document) => root.querySelector(sel);
+export const app = $('#app');
+export const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+export const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+export const ICON = {
   star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>',
   speaker: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -33,7 +35,7 @@ const GAME_ICON = {
 
 // ---------- Screens ----------
 let current = null; // {cleanup}
-function show(html, after) {
+export function show(html, after) {
   stopTalking();
   current?.cleanup?.();
   current = null;
@@ -43,11 +45,11 @@ function show(html, after) {
   after?.();
 }
 
-function topBar(opts = {}) {
-  const s = store.state();
+export function topBar(opts = {}, st = store) {
+  const s = st.state();
   return `
   <header class="bar">
-    ${opts.back ? `<button class="round" id="back" aria-label="Back">${ICON.back}</button>` : '<span class="brand">Earth Explorers</span>'}
+    ${opts.back ? `<button class="round" id="back" aria-label="Back">${ICON.back}</button>` : `<span class="brand">${opts.brand || 'Earth Explorers'}</span>`}
     ${opts.title ? `<h1 class="bar-title">${esc(opts.title)}</h1>` : '<span class="grow"></span>'}
     <div class="stars-pill" aria-label="${s.stars} stars">${ICON.star}<b>${s.stars}</b></div>
     <div class="music" role="group" aria-label="Music volume">
@@ -57,31 +59,43 @@ function topBar(opts = {}) {
     </div>
   </header>`;
 }
-function wireBar(onBack) {
+export function wireBar(onBack, st = store) {
   $('#back')?.addEventListener('click', () => { fx('tap'); onBack(); });
-  const paint = () => [...app.querySelectorAll('.lvl em')].forEach((e, i) => e.classList.toggle('on', i < store.state().music));
-  $('#vol-down')?.addEventListener('click', () => { store.state().music = setMusicLevel(store.state().music - 1); store.save(); paint(); });
-  $('#vol-up')?.addEventListener('click', () => { store.state().music = setMusicLevel(store.state().music + 1); store.save(); paint(); });
+  const paint = () => [...app.querySelectorAll('.lvl em')].forEach((e, i) => e.classList.toggle('on', i < st.state().music));
+  $('#vol-down')?.addEventListener('click', () => { st.state().music = setMusicLevel(st.state().music - 1); st.save(); paint(); });
+  $('#vol-up')?.addEventListener('click', () => { st.state().music = setMusicLevel(st.state().music + 1); st.save(); paint(); });
   paint();
 }
 
-function starRow(n, max = 3) {
+export function starRow(n, max = 3) {
   return `<span class="mini-stars" aria-label="${n} of ${max} stars">${Array.from({ length: max }, (_, i) => `<i class="${i < n ? 'on' : ''}">${ICON.star}</i>`).join('')}</span>`;
 }
 
 // ---------- Start ----------
-function startScreen() {
+export function startScreen() {
+  document.body.classList.remove('pro');
   show(`
   <main class="start">
     <div class="pet big">${petSvg(store.petStage())}</div>
     <h1>Earth Explorers</h1>
     <p class="sub">Rocks, volcanoes, and the inside of our planet</p>
-    <button class="btn primary huge" id="go">Tap to start</button>
+    <div class="levels">
+      <button class="btn primary huge" id="go">Explorer<small>Ages 5 to 10</small></button>
+      <button class="btn huge level-pro" id="go-pro">Geologist<small>Ages 12 and up</small></button>
+    </div>
   </main>`, () => {
+    const begin = () => { initAudio(store.state().music); resumeAudio(); };
     $('#go').addEventListener('click', () => {
-      initAudio(store.state().music);
-      resumeAudio();
+      begin();
+      document.body.classList.remove('pro');
+      try { localStorage.setItem('earthExplorers.level', 'kids'); } catch { /* ignore */ }
       home(true);
+    });
+    $('#go-pro').addEventListener('click', async () => {
+      begin();
+      try { localStorage.setItem('earthExplorers.level', 'pro'); } catch { /* ignore */ }
+      const m = await import('./pro.js');
+      m.proHome(true);
     });
   });
 }
@@ -120,7 +134,7 @@ function home(greet) {
           }).join('')}
         </div>
       </section>`).join('')}
-    <button class="link" id="grown">For grown-ups</button>
+    <div class="foot-links"><button class="link" id="level">Change level</button><button class="link" id="grown">For grown-ups</button></div>
   </main>`, () => {
     wireBar();
     $('#pet').addEventListener('click', () => { fx('star'); say(nextAt ? `Hi! I am Pebble. Win ${nextAt - s.stars} more stars and I will grow!` : 'Hi! I am Pebble. Thank you for all the stars!'); });
@@ -131,6 +145,7 @@ function home(greet) {
       lesson(lid);
     }));
     $('#grown').addEventListener('click', grownUps);
+    $('#level').addEventListener('click', startScreen);
     if (greet) say('Welcome, explorer! Pick a lesson.');
   });
 }
