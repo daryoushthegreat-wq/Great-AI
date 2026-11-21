@@ -1,0 +1,18 @@
+<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross-section of the earth showing crust, mantle, outer core and inner core">
+    <rect width="360" height="130" fill="#ffffff"/>
+    <path d="M6,124 A112,112 0 0 1 230,124 Z" fill="#9b8b7a"/>
+    <path d="M9,124 A109,109 0 0 1 227,124 Z" fill="#e9894f"/>
+    <path d="M14,124 A104,104 0 0 1 222,124 Z" fill="#d9653b"/>
+    <path d="M56.82279077067964,124 A61.17720922932036,61.17720922932036 0 0 1 179.17720922932037,124 Z" fill="#f0a43a"/>
+    <path d="M96.53523779626433,124 A21.464762203735678,21.464762203735678 0 0 1 139.4647622037357,124 Z" fill="#f7d354"/>
+    <line x1="118" y1="124" x2="118" y2="12" stroke="#24303a" stroke-width="0.8" stroke-dasharray="2 2"/>
+    <line x1="118" y1="13" x2="233" y2="13" stroke="#24303a" stroke-width="0.6"/><text x="236" y="16" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-weight="700" font-size="8.5">Crust (thin, cool)</text>
+    <line x1="118" y1="26" x2="233" y2="26" stroke="#24303a" stroke-width="0.6"/><text x="236" y="29" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7.5">Shell = crust + top of mantle</text>
+    <line x1="118" y1="46" x2="233" y2="46" stroke="#24303a" stroke-width="0.6"/><text x="236" y="49" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-weight="700" font-size="8.5">Mantle: solid, churning</text>
+    <line x1="118" y1="72" x2="233" y2="72" stroke="#24303a" stroke-width="0.6"/><text x="236" y="75" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-weight="700" font-size="8.5">Outer core: liquid iron</text>
+    <line x1="118" y1="114" x2="233" y2="114" stroke="#24303a" stroke-width="0.6"/><text x="236" y="117" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-weight="700" font-size="8.5">Inner core: solid</text>
+    <text x="113" y="20" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="end" font-size="7">0 km</text>
+    <text x="113" y="65.82279077067963" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="end" font-size="7">2,900 km</text>
+    <text x="113" y="105.53523779626433" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="end" font-size="7">5,150 km</text>
+    <text x="113" y="122" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="end" font-size="7">6,370 km</text>
+  </svg>

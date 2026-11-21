@@ -1,0 +1,16 @@
+<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cross-section of a volcano with magma chamber, vent, crater and lava flow">
+    <rect width="260" height="150" fill="#d7e9f2"/>
+    <path d="M118 30 q-16 -4 -14 -14 q4 -12 18 -8 q8 -10 20 -2 q14 -2 12 10 q8 8 -4 14Z" fill="#9aa0a6"/>
+    <path d="M20 112 L112 40 L148 40 L240 112Z" fill="#a39486"/>
+    <path d="M40 112 L112 50 M220 112 L148 50 M60 112 L114 64 M200 112 L146 64" stroke="#8a7d70" stroke-width="1.2"/>
+    <rect y="112" width="260" height="38" fill="#9b8b7a"/>
+    <ellipse cx="130" cy="134" rx="40" ry="11" fill="#e5603a"/>
+    <path d="M127 40 L125 126 L135 126 L133 40Z" fill="#e5603a"/>
+    <path d="M148 42 Q160 60 168 80 Q172 92 180 100" stroke="#e5603a" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <text x="130" y="36" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="7">Crater</text>
+    <text x="160" y="12" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8">Ash and gas</text>
+    <text x="186" y="96" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Lava flow</text>
+    <text x="140" y="90" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8">Vent</text>
+    <text x="176" y="136" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700" fill="#fff">Magma chamber</text>
+    <text x="24" y="104" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7">Layers of old lava and ash</text>
+  </svg>

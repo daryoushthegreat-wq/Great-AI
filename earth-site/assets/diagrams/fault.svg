@@ -1,0 +1,8 @@
+<svg viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rock layers broken and shifted along a fault">
+    <rect width="260" height="140" fill="#ffffff"/>
+    <path d="M10 30 H124 L118 52 H10Z" fill="#e3c88f"/><path d="M10 52 H118 L112 74 H10Z" fill="#c98d5a"/><path d="M10 74 H112 L106 96 H10Z" fill="#9c8f80"/><path d="M10 96 H106 L100 118 H10Z" fill="#b5704c"/><path d="M124 46 H250 V68 H118Z" fill="#e3c88f"/><path d="M118 68 H250 V90 H112Z" fill="#c98d5a"/><path d="M112 90 H250 V112 H106Z" fill="#9c8f80"/><path d="M106 112 H250 V134 H100Z" fill="#b5704c"/>
+    <path d="M126 22 L100 128" stroke="#24303a" stroke-width="2.4"/>
+    <path d="M90 60 v-18 m-5 6 l5 -6 l5 6 M150 60 v18 m-5 -6 l5 6 l5 -6" stroke="#e5603a" stroke-width="2.4" fill="none"/>
+    <text x="128" y="16" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="9" font-weight="700">Fault</text>
+    <text x="130" y="134" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" text-anchor="middle">The rock cracks and slips</text>
+  </svg>

@@ -1,0 +1,14 @@
+<svg viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Layers of sedimentary rock: the oldest at the bottom, the youngest at the top">
+    <rect width="260" height="140" fill="#ffffff"/>
+    <path d="M10 14 Q80 10 150 15 T210 13 V38 Q150 40 80 35 T10 38Z" fill="#e3c88f"/><path d="M10 38 Q80 34 150 39 T210 37 V62 Q150 64 80 59 T10 62Z" fill="#d9d2c3"/><path d="M10 62 Q80 58 150 63 T210 61 V86 Q150 88 80 83 T10 86Z" fill="#c98d5a"/><path d="M10 86 Q80 82 150 87 T210 85 V110 Q150 112 80 107 T10 110Z" fill="#9c8f80"/><path d="M10 110 Q80 106 150 111 T210 109 V134 Q150 136 80 131 T10 134Z" fill="#b5704c"/>
+    <g fill="none" stroke="#6b5a49" stroke-width="1.4">
+      <path d="M60 74 m-2 0 a2 2 0 1 1 4 0 a4 4 0 1 1 -8 0 a6 6 0 1 1 12 0"/>
+      <path d="M150 100 m-2 0 a2 2 0 1 1 4 0 a4 4 0 1 1 -8 0 a6 6 0 1 1 12 0 a8 8 0 1 1 -16 0"/>
+      <path d="M110 48 q6 -6 12 0 q6 6 12 0"/>
+    </g>
+    <path d="M232 120 V22 m-6 8 l6 -8 l6 8" stroke="#24303a" stroke-width="2" fill="none"/>
+    <text x="222" y="132" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Oldest</text>
+    <text x="220" y="14" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Youngest</text>
+    <text x="14" y="30" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7">Stratum</text>
+    <text x="70" y="92" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7">Fossils</text>
+  </svg>

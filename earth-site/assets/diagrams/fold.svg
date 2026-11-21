@@ -1,0 +1,8 @@
+<svg viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rock layers folded by sideways pressure">
+    <rect width="260" height="140" fill="#ffffff"/>
+    <path d="M34 92 Q74 36 114 92 T194 92 T234 64" stroke="#b5704c" stroke-width="13" fill="none"/><path d="M34 79 Q74 23 114 79 T194 79 T234 51" stroke="#9c8f80" stroke-width="13" fill="none"/><path d="M34 66 Q74 10 114 66 T194 66 T234 38" stroke="#c98d5a" stroke-width="13" fill="none"/><path d="M34 53 Q74 -3 114 53 T194 53 T234 25" stroke="#e3c88f" stroke-width="13" fill="none"/>
+    <path d="M4 70 h22 m-7 -6 l7 6 l-7 6 M256 70 h-18 m7 -6 l-7 6 l7 6" stroke="#e5603a" stroke-width="3" fill="none"/>
+    <text x="4" y="60" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7">Pressure</text><text x="256" y="60" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7" text-anchor="end">Pressure</text>
+    <text x="74" y="16" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="8" font-weight="700">Upfold</text>
+    <text x="154" y="132" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="8" font-weight="700">Downfold</text>
+  </svg>

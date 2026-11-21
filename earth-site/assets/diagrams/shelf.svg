@@ -1,0 +1,11 @@
+<svg viewBox="0 0 260 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A continental shelf covered by a shallow sea">
+    <rect width="260" height="130" fill="#d7e9f2"/>
+    <path d="M0 50 H260 V130 H0Z" fill="#4f8fb8"/>
+    <path d="M0 40 Q30 36 50 46 L150 58 Q170 60 182 80 L210 120 L260 124 V130 H0Z" fill="#b9a27e"/>
+    <path d="M0 40 Q30 36 50 46" stroke="#8fb87d" stroke-width="4" fill="none"/>
+    <path d="M60 50 v6 M140 50 v8" stroke="#ffffff" stroke-width="1"/>
+    <text x="80" y="46" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700" fill="#fff">Shallow shelf sea</text>
+    <text x="64" y="76" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Continental shelf</text>
+    <text x="196" y="100" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" fill="#fff">Deep ocean</text>
+    <text x="8" y="30" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8">Land</text>
+  </svg>

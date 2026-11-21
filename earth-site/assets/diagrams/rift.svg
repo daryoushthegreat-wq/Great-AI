@@ -1,0 +1,11 @@
+<svg viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A rift: two plates pulling apart with a sea filling the gap">
+    <rect width="260" height="140" fill="#d7e9f2"/>
+    <path d="M0 50 H100 L112 90 L148 90 L160 50 H260 V140 H0Z" fill="#b9a27e"/>
+    <path d="M112 90 L148 90 L144 74 L116 74Z" fill="#4f8fb8"/>
+    <rect y="110" width="260" height="30" fill="#d9653b"/>
+    <path d="M130 110 V92" stroke="#f7d354" stroke-width="4"/>
+    <path d="M70 40 h-30 m8 -6 l-8 6 l8 6 M190 40 h30 m-8 -6 l8 6 l-8 6" stroke="#24303a" stroke-width="2" fill="none"/>
+    <text x="20" y="30" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="9" font-weight="700">Africa</text><text x="200" y="30" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="9" font-weight="700">Arabia</text>
+    <text x="130" y="70" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="8" font-weight="700">Red Sea</text>
+    <text x="150" y="104" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7">Magma rises</text>
+  </svg>

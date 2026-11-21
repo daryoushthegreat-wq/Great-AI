@@ -1,0 +1,11 @@
+<svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A mountain with a deep root of light crust, like an iceberg">
+    <rect width="260" height="150" fill="#ffffff"/>
+    <rect width="260" height="54" fill="#d7e9f2"/>
+    <path d="M0 54 H80 L120 14 L140 30 L160 10 L200 54 H260 V150 H0Z" fill="#d9653b"/>
+    <path d="M0 54 H80 L120 14 L140 30 L160 10 L200 54 H260 V78 H200 Q150 140 110 130 Q70 120 60 78 H0Z" fill="#b9a27e"/>
+    <path d="M0 54 H260" stroke="#24303a" stroke-dasharray="3 3" stroke-width="0.8"/>
+    <text x="170" y="26" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Mountain</text>
+    <text x="104" y="104" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Mountain root</text>
+    <text x="6" y="72" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7">Light continental crust</text>
+    <text x="6" y="140" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" fill="#fff">Denser rock below</text>
+  </svg>

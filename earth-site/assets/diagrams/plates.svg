@@ -1,0 +1,19 @@
+<svg viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plates pulling apart at a mid-ocean ridge and sinking at an ocean trench">
+    <rect width="300" height="160" fill="#d9653b"/>
+    <rect width="300" height="42" fill="#d7e9f2"/>
+    <rect y="42" width="200" height="22" fill="#4f8fb8"/>
+    <path d="M0 62 L58 60 L70 54 L82 60 L188 64 L252 152 L236 158 L180 74 L82 71 L70 67 L58 71 L0 73Z" fill="#9b8b7a"/>
+    <path d="M186 64 L196 46 L226 40 L238 20 L250 40 L300 42 V84 L222 84 Q205 76 186 64Z" fill="#b9a27e"/>
+    <path d="M70 68 Q66 110 72 150" stroke="#f7d354" stroke-width="5" fill="none"/>
+    <path d="M226 118 Q232 90 230 70 Q236 46 238 24" stroke="#e5603a" stroke-width="3" fill="none"/>
+    <path d="M52 52 h-18 m5 -5 l-5 5 l5 5 M88 52 h18 m-5 -5 l5 5 l-5 5" stroke="#24303a" stroke-width="1.6" fill="none"/>
+    <path d="M150 58 h18 m-5 -5 l5 5 l-5 5 M206 100 l10 14 m-7 0 l7 0 l-1 -7" stroke="#24303a" stroke-width="1.6" fill="none"/>
+    <text x="70" y="16" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-weight="700">Mid-ocean ridge</text><text x="70" y="28" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="7.5">plates pull apart</text>
+    <text x="170" y="16" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-weight="700">Ocean trench</text><text x="170" y="28" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="7.5">one plate sinks</text>
+    <text x="262" y="16" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" font-weight="700">Volcano</text>
+    <text x="78" y="120" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7.5">Magma rises</text>
+    <text x="96" y="86" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="7.5" fill="#fff">Oceanic crust (thin, dense)</text>
+    <text x="262" y="66" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="7.5">Continental</text><text x="262" y="75" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="middle" font-size="7.5">crust</text>
+    <text x="196" y="140" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" text-anchor="end" font-size="8" fill="#fff" font-weight="700">Subduction</text>
+    <text x="8" y="152" font-family="ui-rounded, Segoe UI, system-ui, sans-serif" font-size="9" fill="#24303a" font-size="8" fill="#fff" font-weight="700">Mantle</text>
+  </svg>
