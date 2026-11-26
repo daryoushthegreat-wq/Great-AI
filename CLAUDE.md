@@ -50,7 +50,7 @@ Great-AI/
 │   └── site-template.html    # Page shell; data is injected from the validated corpora
 ├── .claude/
 │   ├── settings.json         # Registers the SessionStart hook
-│   └── hooks/session-start.sh  # Installs the typesafe-ai plugin when CLAUDE_CODE_REMOTE=true
+│   └── hooks/session-start.sh  # Installs typesafe + claude-code-setup plugins when CLAUDE_CODE_REMOTE=true
 ├── dist/                 # tsc output, gitignored; tests run from here
 ├── tsconfig.json
 ├── package.json
