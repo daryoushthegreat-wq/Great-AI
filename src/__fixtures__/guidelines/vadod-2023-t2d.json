@@ -1,0 +1,242 @@
+{
+  "_comment": [
+    "Verbatim recommendation text from Table 5 of the VA/DoD guideline, copied by script from a",
+    "Firecrawl PDF extraction on 2026-11-18 and cross-checked: each recommendation's text also",
+    "appears verbatim in the guideline body. Table 5 merges the Topic cell across rows 23-26;",
+    "topicAsStated is filled down, and the body confirms all four sit under section E,",
+    "Pharmacotherapy. Licence: the document carries no copyright notice and cites the U.S.",
+    "Government Printing Office, so it is treated as a US federal work (17 U.S.C. 105). That is an",
+    "inference, recorded in licenceBasis; contractors supported the evidence review. Only",
+    "recommendation text is taken here, never tables adapted from third-party sources."
+  ],
+  "citation": {
+    "title": "VA/DoD Clinical Practice Guideline for the Management of Type 2 Diabetes Mellitus",
+    "organization": "U.S. Department of Veterans Affairs and U.S. Department of Defense",
+    "year": 2023,
+    "version": "6.0",
+    "publishedOn": "2023-05",
+    "url": "https://www.healthquality.va.gov/guidelines/CD/diabetes/VADoD-Diabetes-CPG_Final_508.pdf",
+    "landingPage": "https://www.healthquality.va.gov/guidelines/CD/diabetes/index.asp",
+    "licence": "Public domain (US federal government work, 17 U.S.C. 105)",
+    "licenceBasis": "Inferred: no copyright notice in the document; published by VA/DoD with a suggested citation to the U.S. Government Printing Office. Evidence review was supported by contractors (The Lewin Group, ECRI, Sigma Health Consulting, Duty First Consulting); recommendations were written by the VA/DoD work group.",
+    "retrievedAt": "2026-11-18T21:40:00Z"
+  },
+  "condition": "type_2_diabetes",
+  "strengthScale": [
+    "Strong for",
+    "Weak for",
+    "Neither for nor against",
+    "Weak against",
+    "Strong against"
+  ],
+  "recommendations": [
+    {
+      "id": "1",
+      "topicAsStated": "Prediabetes",
+      "subTopicAsStated": "Exercise/Nutrition",
+      "text": "In adults with prediabetes, we suggest aerobic exercise (such as walking 8–9 miles a week) and healthy eating (with a goal weight loss >3%) to achieve a reduction in body fat mass, weight loss, and improvement in fasting blood glucose.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "2",
+      "topicAsStated": "Prediabetes",
+      "subTopicAsStated": "Pharmacotherapy",
+      "text": "In adults with prediabetes who have participated in healthy lifestyle modification and remain at high risk for progression to type 2 diabetes mellitus, we suggest evaluating patient characteristics (e.g., age, life expectancy, co-occurring conditions, BMI, other risk factors) and offering metformin or other select medications to reduce the risk of progression from prediabetes to type 2 diabetes mellitus.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "3",
+      "topicAsStated": "Telehealth",
+      "subTopicAsStated": null,
+      "text": "In adults with type 2 diabetes mellitus, we suggest offering health care delivered through telehealth interventions to improve outcomes.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Not Reviewed, Amended"
+    },
+    {
+      "id": "4",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Screening for Comorbidities",
+      "text": "There is insufficient evidence to recommend for or against routine screening or using a specific tool to screen for or diagnose diabetes distress.",
+      "strengthAsStated": "Neither for nor against",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "5",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Screening for Comorbidities",
+      "text": "In adults with type 2 diabetes mellitus and co-occurring non-alcoholic fatty liver disease, we suggest clinicians should assess for fibrosis using a non-invasive tool (e.g., Fibrosis-4).",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "6",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Screening for Comorbidities",
+      "text": "In adults with type 2 diabetes mellitus, there is insufficient evidence to recommend for or against routine screening for fall risk and cognitive impairment to improve outcomes.",
+      "strengthAsStated": "Neither for nor against",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "7",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Diabetes Self-Management Education and Support",
+      "text": "In adults with type 2 diabetes mellitus, we recommend diabetes self-management education and support.",
+      "strengthAsStated": "Strong for",
+      "categoryAsStated": "Not Reviewed, Amended"
+    },
+    {
+      "id": "8",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Glycemic Management",
+      "text": "For adults with type 2 diabetes mellitus, we suggest using high glycemic variability over time (e.g., fluctuation in HbA1c or fasting blood glucose) as a prognostic indicator for risk of hypoglycemia, morbidity, and mortality.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-replaced"
+    },
+    {
+      "id": "9",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Glycemic Management",
+      "text": "We suggest setting an individualized HbA1c target range based on the clinician's appraisal of the risk benefit ratio, patient characteristics, presence or absence of type 2 diabetes mellitus complications, comorbidities, and life expectancy.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Not reviewed, Amended"
+    },
+    {
+      "id": "10",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Glycemic Management",
+      "text": "We suggest an HbA1c range of 7.0–8.5% for most patients, if it can be safely achieved.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Not reviewed, Amended"
+    },
+    {
+      "id": "11",
+      "topicAsStated": "Management of Type 2 Diabetes Mellitus",
+      "subTopicAsStated": "Glycemic Management",
+      "text": "In insulin-treated adults with type 2 diabetes mellitus who are not achieving glycemic goals, we suggest real-time continuous glucose monitoring to decrease hypoglycemia and improve HbA1c.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "12",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Medical Nutrition Therapy",
+      "text": "For adults with type 2 diabetes mellitus, we suggest a Mediterranean style diet to improve glycemic control, body weight, and hypertension.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-replaced"
+    },
+    {
+      "id": "13",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Medical Nutrition Therapy",
+      "text": "For adults with type 2 diabetes mellitus, we suggest a nutrition intervention strategy providing 13–50% of their total daily caloric intake from carbohydrates for diabetes management.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-replaced"
+    },
+    {
+      "id": "14",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Medical Nutrition Therapy",
+      "text": "For adults with type 2 diabetes mellitus, we suggest a vegetarian dietary pattern for glycemic control and weight loss.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "15",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Medical Nutrition Therapy",
+      "text": "For adults with type 2 diabetes mellitus, we suggest against intermittent fasting.",
+      "strengthAsStated": "Weak against",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "16",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Exercise",
+      "text": "In adults with type 2 diabetes mellitus, we suggest regular physical activity to improve glycemic control, including but not limited to aerobic exercise, resistance training, or tai chi.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "17",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Stress",
+      "text": "In adults with stress related to type 2 diabetes mellitus, we suggest offering a mindfulness-based stress reduction program for short-term improvement.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "18",
+      "topicAsStated": "Non-pharmacotherapy",
+      "subTopicAsStated": "Stress",
+      "text": "For adults with type 2 diabetes mellitus and diabetes distress, there is insufficient evidence to recommend for or against the use of acupuncture, biofeedback, hypnosis, guided imagery, massage therapy, yoga, or tai chi to improve outcomes.",
+      "strengthAsStated": "Neither for nor against",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "19",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "For adults with type 2 diabetes mellitus with atherosclerotic cardiovascular disease, we recommend glucagon-like peptide-1 receptor agonists or sodium-glucose cotransporter-2 inhibitors with proven cardiovascular benefits to decrease the risk of major adverse cardiovascular events.",
+      "strengthAsStated": "Strong for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "20",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "For adults with type 2 diabetes mellitus at high risk of atherosclerotic cardiovascular disease (i.e., chronic kidney disease, left ventricular hypertrophy, heart failure), we suggest glucagon-like peptide-1 receptor agonists or sodium-glucose cotransporter-2 inhibitors with proven cardiovascular benefits to decrease the risk of major adverse cardiovascular events.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "21",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "For adults with type 2 diabetes mellitus and heart failure, we recommend a sodium-glucose cotransporter-2 inhibitor to prevent hospital admissions for heart failure.",
+      "strengthAsStated": "Strong for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "22",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "For adults with type 2 diabetes mellitus and chronic kidney disease, we recommend sodium-glucose cotransporter-2 inhibitors with proven renal protection to improve renal outcomes.",
+      "strengthAsStated": "Strong for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "23",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "For adults with type 2 diabetes mellitus and chronic kidney disease who are not good candidates for a sodium-glucose cotransporter-2 inhibitor, we recommend a glucagon-like peptide-1 receptor agonist with proven renal protection to improve macroalbuminuria.",
+      "strengthAsStated": "Strong for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "24",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "In adults with type 2 diabetes mellitus who have cardiovascular disease or renal disease, we suggest that the addition of a sodium-glucose cotransporter-2 inhibitor or glucagon-like peptide-1 receptor agonist be considered, even if the patient has already achieved their individualized target range for glycemic control.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "25",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "In adults with type 2 diabetes mellitus, especially those 65 years and older, we suggest prioritizing drug classes other than insulin, sulfonylureas, or meglitinides to minimize the risk of hypoglycemia, if glycemic control can be achieved with other treatments.",
+      "strengthAsStated": "Weak for",
+      "categoryAsStated": "Reviewed, New-added"
+    },
+    {
+      "id": "26",
+      "topicAsStated": "Pharmacotherapy",
+      "subTopicAsStated": null,
+      "text": "In adults with type 2 diabetes mellitus who have co-occurring cognitive impairment or risk of falls, there is insufficient evidence to recommend for or against specific treatment strategies for glucose lowering to reduce the risk of harms.",
+      "strengthAsStated": "Neither for nor against",
+      "categoryAsStated": "Reviewed, New-added"
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+<title>T2D Drug Guideline Finder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one reading column of verbatim recommendations beside a narrow citation rail; stacks on phones. */
+:root {
+  --bg: #f5f7f8;
+  --surface: #ffffff;
+  --ink: #18252d;
+  --muted: #56656e;
+  --rule: #d9e0e4;
+  --accent: #1c5d78;
+  --accent-ink: #ffffff;
+  --mark: #fde9a8;
+  --against: #9a4a1c;
+  --font-quote: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-id: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181d; --surface: #182229; --ink: #e3eaee; --muted: #9aa9b2; --rule: #2b3942;
+    --accent: #6fb4d2; --accent-ink: #0d1a20; --mark: #5c4a12; --against: #e39a6c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181d; --surface: #182229; --ink: #e3eaee; --muted: #9aa9b2; --rule: #2b3942;
+  --accent: #6fb4d2; --accent-ink: #0d1a20; --mark: #5c4a12; --against: #e39a6c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font: 400 15px/1.55 var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 24px; }
+header { display: grid; gap: 8px; }
+h1 { font: 600 clamp(1.5rem, 3vw, 2rem)/1.15 var(--font-ui); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.notice { font-size: 13px; color: var(--muted); border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; max-width: 75ch; }
+.label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.picker { display: grid; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: 500 14px/1 var(--font-ui); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 9px 14px; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip:focus-visible, .toggle input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); cursor: pointer; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+@media (max-width: 820px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+section { display: grid; gap: 12px; min-width: 0; }
+.section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+.section-head h2 { font: 600 16px/1.3 var(--font-ui); margin: 0; }
+.section-head .src { font-size: 13px; color: var(--muted); }
+.recs { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.rec { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px 18px; display: grid; gap: 10px; }
+.rec-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 13px; color: var(--muted); }
+.rec-id { font: 500 13px/1 var(--font-id); color: var(--ink); }
+.rec blockquote { margin: 0; font: 400 1.06rem/1.6 var(--font-quote); max-width: 68ch; }
+mark { background: var(--mark); color: inherit; padding: 0 2px; border-radius: 2px; }
+.why { font-size: 12.5px; color: var(--muted); }
+.strength { font: 600 12px/1 var(--font-ui); padding: 5px 9px; border-radius: 4px; border: 1.5px solid var(--accent); white-space: nowrap; }
+.strength[data-s="Strong for"] { background: var(--accent); color: var(--accent-ink); }
+.strength[data-s="Weak for"] { color: var(--accent); }
+.strength[data-s="Neither for nor against"] { color: var(--muted); border-color: var(--muted); border-style: dashed; }
+.strength[data-s="Weak against"], .strength[data-s="Strong against"] { color: var(--against); border-color: var(--against); }
+.strength[data-s="Strong against"] { background: var(--against); color: var(--surface); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.empty { background: var(--surface); border: 1px dashed var(--rule); border-radius: 6px; padding: 16px 18px; color: var(--muted); }
+.rail { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: grid; gap: 12px; }
+.rail p { margin: 0; font-size: 13px; color: var(--muted); }
+.ada-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.ada-list li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+.ada-list li:first-child { border-top: 0; }
+.ada-list .grade { font-size: 13px; color: var(--muted); white-space: nowrap; }
+a { color: var(--accent); text-underline-offset: 2px; }
+footer { display: grid; gap: 10px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; }
+footer p { margin: 0; max-width: 85ch; }
+@media (prefers-reduced-motion: no-preference) { .chip { transition: background-color .15s, border-color .15s, color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="label">Type 2 diabetes · drug choice by patient situation</div>
+    <h1>T2D Drug Guideline Finder</h1>
+    <p class="lede">Pick the patient's situation to see what the VA/DoD guideline recommends, word for word, and which ADA Standards of Care recommendations to read alongside it.</p>
+    <p class="notice">For clinicians. This page shows guideline text and citations only; it writes no advice of its own and does not replace the full guidelines or clinical judgment.</p>
+  </header>
+
+  <div class="picker">
+    <div class="label" id="picker-label">Patient situation</div>
+    <div class="chips" role="group" aria-labelledby="picker-label" id="chips"></div>
+    <label class="toggle"><input type="checkbox" id="nondrug"> Include non-drug recommendations</label>
+  </div>
+
+  <div class="cols">
+    <section aria-labelledby="va-h">
+      <div class="section-head">
+        <h2 id="va-h">VA/DoD recommendations</h2>
+        <span class="src" id="va-src"></span>
+      </div>
+      <div class="legend" aria-label="Strength of recommendation">
+        <span><span class="strength" data-s="Strong for">Strong for</span> "We recommend"</span>
+        <span><span class="strength" data-s="Weak for">Weak for</span> "We suggest"</span>
+        <span><span class="strength" data-s="Neither for nor against">Neither</span> insufficient evidence</span>
+      </div>
+      <ul class="recs" id="va-list"></ul>
+    </section>
+
+    <aside class="rail" aria-labelledby="ada-h">
+      <div class="section-head">
+        <h2 id="ada-h">ADA Standards of Care 2026</h2>
+      </div>
+      <p>ADA's licence does not allow its wording to be reproduced here. These are the recommendation numbers and evidence grades to look up in section 9.</p>
+      <ul class="ada-list" id="ada-list"></ul>
+      <p><a id="ada-link" href="#" target="_blank" rel="noopener">Read section 9 on diabetesjournals.org</a></p>
+    </aside>
+  </div>
+
+  <footer>
+    <p id="src-va"></p>
+    <p id="src-ada"></p>
+    <p>Situations are matched by exact phrases in the VA/DoD text, highlighted on each card, and by topic tags on the ADA recommendations. The VA/DoD guideline is from 2023 and does not cover some situations that ADA 2026 addresses, such as obesity and fatty liver disease. Free-text questions are not answered on this page yet.</p>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function highlight(text, phrases) {
+  if (!phrases.length) return esc(text);
+  const lower = text.toLowerCase();
+  const spans = [];
+  for (const p of phrases) {
+    let i = lower.indexOf(p);
+    while (i !== -1) { spans.push([i, i + p.length]); i = lower.indexOf(p, i + p.length); }
+  }
+  spans.sort((a, b) => a[0] - b[0]);
+  let out = '', at = 0;
+  for (const [s, e] of spans) {
+    if (s < at) continue;
+    out += esc(text.slice(at, s)) + '<mark>' + esc(text.slice(s, e)) + '</mark>';
+    at = e;
+  }
+  return out + esc(text.slice(at));
+}
+
+const vaById = new Map(DATA.vadod.recommendations.map((r) => [r.id, r]));
+const adaById = new Map(DATA.ada.recommendations.map((r) => [r.id, r]));
+const chips = document.getElementById('chips');
+const nondrug = document.getElementById('nondrug');
+
+for (const s of DATA.situations) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'chip'; b.id = 'chip-' + s.id; b.dataset.id = s.id; b.textContent = s.label;
+  b.addEventListener('click', () => { location.hash = s.id === 'all' ? '' : s.id; render(); });
+  chips.appendChild(b);
+}
+nondrug.addEventListener('change', render);
+window.addEventListener('hashchange', render);
+
+function current() {
+  const id = location.hash.slice(1);
+  return DATA.situations.find((s) => s.id === id) || DATA.situations[0];
+}
+
+function render() {
+  const s = current();
+  for (const b of chips.children) b.setAttribute('aria-pressed', String(b.dataset.id === s.id));
+
+  const all = s.vadod.map((m) => ({ rec: vaById.get(m.id), phrases: m.phrases }));
+  const shown = all.filter((m) => nondrug.checked || m.rec.drug);
+  const hidden = all.length - shown.length;
+  const list = document.getElementById('va-list');
+  if (!shown.length) {
+    list.innerHTML = '<li class="empty">' + (all.length
+      ? 'The VA/DoD guideline mentions this situation only in non-drug recommendations. Turn on "Include non-drug recommendations" to see them.'
+      : 'The 2023 VA/DoD guideline has no recommendation that names this situation. Check the ADA recommendations alongside.') + '</li>';
+  } else {
+    list.innerHTML = shown.map(({ rec, phrases }) => `
+      <li class="rec">
+        <div class="rec-meta">
+          <span class="rec-id">Rec ${esc(rec.id)}</span>
+          <span class="strength" data-s="${esc(rec.strengthAsStated)}">${esc(rec.strengthAsStated)}</span>
+          <span>${esc(rec.topicAsStated)}${rec.subTopicAsStated ? ' · ' + esc(rec.subTopicAsStated) : ''}</span>
+        </div>
+        <blockquote>${highlight(rec.text, phrases)}</blockquote>
+        ${phrases.length ? `<div class="why">Matched on: ${phrases.map((p) => '“' + esc(p) + '”').join(', ')}</div>` : ''}
+      </li>`).join('') + (hidden ? `<li class="why">${hidden} non-drug recommendation${hidden > 1 ? 's' : ''} hidden.</li>` : '');
+  }
+  document.getElementById('va-src').textContent = `${shown.length} shown · v${DATA.vadod.citation.version}, ${DATA.vadod.citation.year}`;
+
+  const ada = s.ada.map((id) => adaById.get(id));
+  document.getElementById('ada-list').innerHTML = ada.length
+    ? ada.map((r) => `<li><span class="rec-id">Rec ${esc(r.id)}</span><span class="grade">Grade ${esc(r.evidenceGradeAsStated)}</span></li>`).join('')
+    : '<li class="why">No ADA section 9 recommendation in this corpus is tagged for this situation.</li>';
+}
+
+const va = DATA.vadod.citation, ad = DATA.ada.citation;
+document.getElementById('ada-link').href = ad.url;
+document.getElementById('src-va').innerHTML =
+  `VA/DoD: <a href="${esc(va.landingPage || va.url)}" target="_blank" rel="noopener">${esc(va.display)}</a>, version ${esc(va.version)}, ${esc(va.publishedOn)}. Reproduced as a US federal work; the document carries no copyright notice.`;
+document.getElementById('src-ada').innerHTML =
+  `ADA: <a href="${esc(ad.url)}" target="_blank" rel="noopener">${esc(ad.title)}</a>, Diabetes Care ${esc(ad.volume)} (Suppl. 1), ${esc(ad.pages)}, doi:${esc(ad.doi)}. Cited, not reproduced. Page built ${esc(DATA.builtAt)}.`;
+
+render();
+</script>
