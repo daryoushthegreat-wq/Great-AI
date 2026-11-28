@@ -1,0 +1,28 @@
+# GitHub CodeQL static analysis for TypeScript/JavaScript.
+# Free for public repositories. Results appear under Security > Code scanning.
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '23 4 * * 1' # weekly, Monday 04:23 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: github/codeql-action/init@e274593ecfcbcdc39c8f034978d84614cebcb71d # v4.39.5
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@e274593ecfcbcdc39c8f034978d84614cebcb71d # v4.39.5
